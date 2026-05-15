@@ -301,6 +301,241 @@ nav.top {
   color: var(--ink-faint);
 }
 
+/* --- Trust seal: editorial stamp above each password input --- */
+.trust-seal {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+  padding: 18px 22px 18px 24px;
+  background: linear-gradient(180deg, rgba(78, 122, 94, 0.06), rgba(78, 122, 94, 0.015));
+  border-left: 2px solid var(--safe);
+  margin-bottom: 28px;
+  position: relative;
+  overflow: hidden;
+}
+.trust-seal::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(45deg, transparent 0 9px, rgba(78, 122, 94, 0.03) 9px 10px);
+  pointer-events: none;
+}
+.trust-seal-icon {
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+  border: 1.5px solid var(--safe);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-family: var(--mono);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--safe-deep);
+  background: var(--paper);
+  position: relative;
+  z-index: 1;
+  letter-spacing: 0;
+}
+.trust-seal-icon::before {
+  content: '';
+  position: absolute;
+  inset: -5px;
+  border: 1px dashed var(--safe);
+  border-radius: 50%;
+  opacity: 0.32;
+  animation: sealRotate 32s linear infinite;
+}
+@keyframes sealRotate {
+  to { transform: rotate(360deg); }
+}
+.trust-seal-content {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  z-index: 1;
+}
+.trust-seal-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--safe-deep);
+  margin-bottom: 8px;
+}
+.trust-seal-eyebrow .seal-rule {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--safe), transparent);
+  opacity: 0.4;
+}
+.trust-seal-title {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.18rem;
+  color: var(--ink);
+  line-height: 1.25;
+  margin: 0 0 6px;
+}
+.trust-seal-title strong {
+  font-style: normal;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+.trust-seal-body {
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+  line-height: 1.55;
+  margin: 0;
+  max-width: 58ch;
+}
+
+/* Smaller variant for offline-only inputs (strength + bot) */
+.trust-seal--sm {
+  padding: 14px 18px 14px 20px;
+  margin-bottom: 22px;
+  gap: 14px;
+}
+.trust-seal--sm .trust-seal-icon { width: 30px; height: 30px; font-size: 0.82rem; }
+.trust-seal--sm .trust-seal-icon::before { inset: -4px; }
+.trust-seal--sm .trust-seal-title { font-size: 1rem; }
+.trust-seal--sm .trust-seal-body { font-size: 0.82rem; }
+
+/* Live indicator — pulsing dot that proves locality while typing */
+.live-dot {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  color: var(--safe-deep);
+  opacity: 0;
+  transform: translateY(2px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+.live-dot.is-live {
+  opacity: 1;
+  transform: translateY(0);
+}
+.live-dot::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--safe);
+  box-shadow: 0 0 0 0 rgba(78, 122, 94, 0.55);
+  animation: livePulse 1.6s ease-out infinite;
+}
+@keyframes livePulse {
+  0%   { box-shadow: 0 0 0 0 rgba(78, 122, 94, 0.55); }
+  70%  { box-shadow: 0 0 0 8px rgba(78, 122, 94, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(78, 122, 94, 0); }
+}
+
+/* Technical pill strip — under the main password input */
+.trust-strip {
+  margin-top: 18px;
+  display: flex;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+  gap: 0;
+}
+.trust-pill {
+  flex: 1 1 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 6px 16px;
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  border-right: 1px solid var(--line);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.2s, background 0.2s;
+  cursor: default;
+}
+.trust-pill:first-child { padding-left: 2px; }
+.trust-pill:last-child { border-right: none; padding-right: 2px; }
+.trust-pill .pill-num { color: var(--ink-faint); }
+.trust-pill .pill-check {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--safe);
+}
+a.trust-pill {
+  cursor: pointer;
+}
+a.trust-pill:hover {
+  color: var(--ink);
+  background: rgba(78, 122, 94, 0.05);
+}
+a.trust-pill .pill-arrow {
+  margin-left: auto;
+  opacity: 0.45;
+  transition: opacity 0.2s, transform 0.2s;
+}
+a.trust-pill:hover .pill-arrow {
+  opacity: 1;
+  transform: translate(2px, -2px);
+}
+.trust-pill[data-tooltip] {
+  position: relative;
+  cursor: help;
+}
+.trust-pill[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 0;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--sans);
+  font-size: 0.76rem;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  padding: 10px 14px;
+  border-radius: 3px;
+  width: max-content;
+  max-width: 280px;
+  line-height: 1.5;
+  z-index: 10;
+  box-shadow: 0 12px 30px -10px rgba(14, 42, 71, 0.4);
+  white-space: normal;
+}
+.trust-pill[data-tooltip]:hover::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 18px;
+  border: 6px solid transparent;
+  border-top-color: var(--ink);
+  z-index: 10;
+}
+
+@media (max-width: 720px) {
+  .trust-seal { flex-direction: column; gap: 12px; padding: 16px 18px; }
+  .trust-seal-icon { width: 34px; height: 34px; }
+  .trust-strip { flex-direction: column; padding-top: 10px; }
+  .trust-pill {
+    flex: 1 1 auto;
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+    padding: 9px 0 !important;
+  }
+  .trust-pill:last-child { border-bottom: none; }
+  .trust-pill[data-tooltip]:hover::after,
+  .trust-pill[data-tooltip]:hover::before { display: none; }
+}
+
 /* --- Result --- */
 .result {
   margin-top: 28px;
@@ -1194,13 +1429,45 @@ footer {
     <p class="hero-sub reveal">Vi kollar om ditt lösenord finns i kända dataintrång från LinkedIn, Facebook, Adobe och hundratals andra läckor. Ditt lösenord lämnar aldrig din dator — vi använder en teknik som heter <em>k-anonymitet</em>.</p>
 
     <div class="check-card reveal">
+      <div class="trust-seal">
+        <div class="trust-seal-icon" aria-hidden="true">✓</div>
+        <div class="trust-seal-content">
+          <div class="trust-seal-eyebrow">
+            <span>Säkerhetsgaranti</span>
+            <span class="seal-rule" aria-hidden="true"></span>
+            <span class="live-dot" id="live-dot-main"><span>lokalt · inget skickas</span></span>
+          </div>
+          <p class="trust-seal-title"><strong>Din dator.</strong> Ingen server.</p>
+          <p class="trust-seal-body">Lösenordet hashas i din webbläsare. Bara fem tecken av hash-koden lämnar enheten — aldrig själva lösenordet. Samma teknik som lösenordshanterare som 1Password använder internt.</p>
+        </div>
+      </div>
+
       <label class="check-label" for="pw-input">Skriv in lösenordet du vill kontrollera</label>
       <div class="input-row">
         <input type="password" id="pw-input" placeholder="ditt lösenord..." autocomplete="off" spellcheck="false">
         <button class="toggle-eye" id="toggle-eye" type="button">visa</button>
         <button class="btn-check" id="btn-check" type="button">Kontrollera</button>
       </div>
-      <p class="privacy-note">Lösenordet hashas i din webbläsare. Bara fem tecken av hash-koden skickas iväg. Din dator avgör själv om det finns en träff.</p>
+
+      <div class="trust-strip" role="list" aria-label="Tekniska säkerhetsgarantier">
+        <span class="trust-pill" role="listitem">
+          <span class="pill-num">01</span>
+          <span class="pill-check" aria-hidden="true">✓</span>
+          Hashas i webbläsaren
+        </span>
+        <a class="trust-pill" role="listitem" href="https://en.wikipedia.org/wiki/K-anonymity" target="_blank" rel="noopener">
+          <span class="pill-num">02</span>
+          <span class="pill-check" aria-hidden="true">✓</span>
+          k-anonymitet
+          <span class="pill-arrow" aria-hidden="true">↗</span>
+        </a>
+        <span class="trust-pill" role="listitem" data-tooltip="Tryck F12 → Network-fliken → klicka Kontrollera. Du ser bara en förfrågan med 5 tecken — aldrig hela lösenordet.">
+          <span class="pill-num">03</span>
+          <span class="pill-check" aria-hidden="true">✓</span>
+          Verifiera i DevTools (F12)
+        </span>
+      </div>
+
       <div class="result" id="result"></div>
     </div>
   </div>
@@ -1225,6 +1492,19 @@ footer {
     </div>
 
     <div class="strength-wrap reveal">
+      <div class="trust-seal trust-seal--sm">
+        <div class="trust-seal-icon" aria-hidden="true">✓</div>
+        <div class="trust-seal-content">
+          <div class="trust-seal-eyebrow">
+            <span>Helt offline</span>
+            <span class="seal-rule" aria-hidden="true"></span>
+            <span class="live-dot" id="live-dot-strength"><span>0 nätverksanrop</span></span>
+          </div>
+          <p class="trust-seal-title"><strong>Aldrig internet.</strong> Allt sker här.</p>
+          <p class="trust-seal-body">Det här testet körs uteslutande i din webbläsare. Bokstäverna du skriver lämnar aldrig enheten — inte ens som hash.</p>
+        </div>
+      </div>
+
       <label class="check-label" for="strength-input">Testa styrkan i realtid</label>
       <input type="text" id="strength-input" class="strength-input" placeholder="skriv något..." autocomplete="off" spellcheck="false">
       <div class="strength-meter" id="strength-meter">
@@ -1254,6 +1534,19 @@ footer {
     </div>
 
     <div class="bot-arena reveal">
+      <div class="trust-seal trust-seal--sm">
+        <div class="trust-seal-icon" aria-hidden="true">✓</div>
+        <div class="trust-seal-content">
+          <div class="trust-seal-eyebrow">
+            <span>Bara en simulation</span>
+            <span class="seal-rule" aria-hidden="true"></span>
+            <span class="live-dot" id="live-dot-bot"><span>kör lokalt</span></span>
+          </div>
+          <p class="trust-seal-title"><strong>Aldrig internet.</strong> Bara en simulation.</p>
+          <p class="trust-seal-body">Hela botkampen körs i din webbläsare. Lösenordet du skriver in skickas aldrig någonstans — det används bara för att rita upp showen nedan.</p>
+        </div>
+      </div>
+
       <label class="check-label" for="bot-input">Ge boten något att jobba på</label>
       <div class="input-row">
         <input type="text" id="bot-input" placeholder="skriv ett testlösenord..." autocomplete="off" spellcheck="false">
@@ -1544,6 +1837,18 @@ function formatNumber(n) {
 
 btnCheck.addEventListener('click', runCheck);
 pwInput.addEventListener('keydown', e => { if (e.key === 'Enter') runCheck(); });
+
+// Live-dot indicators — visible pulse when user types to prove inputs stay local
+function bindLiveDot(input, dotId) {
+  const dot = document.getElementById(dotId);
+  if (!input || !dot) return;
+  const update = () => dot.classList.toggle('is-live', input.value.length > 0);
+  input.addEventListener('input', update);
+  input.addEventListener('focus', update);
+}
+bindLiveDot(pwInput, 'live-dot-main');
+bindLiveDot(document.getElementById('strength-input'), 'live-dot-strength');
+bindLiveDot(document.getElementById('bot-input'), 'live-dot-bot');
 
 // ======================================================================
 // Password strength (custom, no zxcvbn to keep it light)
