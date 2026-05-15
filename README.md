@@ -40,7 +40,7 @@ Lösenordet lämnar **aldrig** din enhet. Verifiera själv genom att öppna DevT
 ## Kör lokalt
 
 ```bash
-git clone https://github.com/cetoro67/sakerkoll.git
+git clone https://github.com/BatakSolutions/sakerkoll.git
 cd sakerkoll
 # Servera mappen med valfri statisk server, t.ex.:
 python -m http.server 8000
