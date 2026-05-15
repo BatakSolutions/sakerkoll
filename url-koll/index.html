@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>URL-kollen — Säkerkoll</title>
+<meta name="description" content="Klistra in en webbadress och få en detaljerad säkerhetsrapport. Kontroll av HTTPS, certifikat, säkerhetsheaders, domänålder och typosquatting.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #f4efe6;
+  --bg-alt: #ebe4d4;
+  --bg-deep: #e5ddc9;
+  --ink: #0e2a47;
+  --ink-soft: #3d5570;
+  --ink-mute: #6b7a8f;
+  --ink-faint: #a8b0bc;
+  --line: rgba(14, 42, 71, 0.12);
+  --line-strong: rgba(14, 42, 71, 0.25);
+  --paper: #faf6ed;
+  --accent: #c76a4a;
+  --accent-deep: #a85336;
+  --safe: #4e7a5e;
+  --safe-deep: #36583f;
+  --warn: #b8935a;
+  --danger: #a85336;
+  --serif: 'Fraunces', 'Times New Roman', serif;
+  --sans: 'Geist', -apple-system, sans-serif;
+  --mono: 'Geist Mono', 'Courier New', monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  position: relative;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.35;
+  z-index: 100;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.055 0 0 0 0 0.165 0 0 0 0 0.28 0 0 0 0.15 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  mix-blend-mode: multiply;
+}
+
+h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: -0.01em; }
+h1 { font-variation-settings: 'opsz' 144; }
+
+a { color: inherit; }
+
+.mono { font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.06em; color: var(--ink-soft); }
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.eyebrow::before { content: ''; width: 28px; height: 1px; background: var(--ink-soft); }
+
+.container { max-width: 1100px; margin: 0 auto; padding: 0 40px; position: relative; z-index: 1; }
+
+/* nav */
+nav.top {
+  position: sticky; top: 0; z-index: 50;
+  backdrop-filter: blur(12px) saturate(1.1);
+  -webkit-backdrop-filter: blur(12px) saturate(1.1);
+  background: rgba(244, 239, 230, 0.78);
+  border-bottom: 1px solid var(--line);
+}
+.nav-inner {
+  max-width: 1200px; margin: 0 auto;
+  padding: 18px 40px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.logo {
+  font-family: var(--serif);
+  font-size: 1.3rem;
+  font-weight: 500;
+  display: flex; align-items: center; gap: 10px;
+  text-decoration: none;
+}
+.logo-mark {
+  width: 22px; height: 22px;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+  position: relative;
+}
+.logo-mark::after { content: ''; position: absolute; inset: 4px; background: var(--ink); border-radius: 50%; }
+.nav-links { display: flex; gap: 32px; align-items: center; }
+.nav-links a {
+  text-decoration: none;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--ink); }
+.nav-links a.active { color: var(--ink); font-weight: 500; }
+
+.nav-toggle {
+  display: none;
+  background: transparent;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  margin: -10px;
+}
+.nav-toggle span {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: var(--ink);
+  margin: 5px 0;
+  transition: transform 0.3s, opacity 0.3s;
+  border-radius: 1px;
+}
+.nav-toggle.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.nav-toggle.open span:nth-child(2) { opacity: 0; }
+.nav-toggle.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* hero */
+.hero { padding: 90px 0 40px; }
+.hero-eyebrow-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+.hero h1 {
+  font-size: clamp(2.8rem, 7vw, 5.6rem);
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+  max-width: 16ch;
+}
+.hero h1 em { font-style: italic; font-weight: 400; color: var(--accent); }
+.hero-sub {
+  max-width: 56ch;
+  margin-top: 28px;
+  font-size: 1.1rem;
+  color: var(--ink-soft);
+}
+
+/* form */
+.check-card {
+  margin-top: 56px;
+  background: var(--paper);
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  padding: 40px 44px;
+  position: relative;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.8) inset, 0 20px 50px -30px rgba(14, 42, 71, 0.25);
+}
+.check-card::before {
+  content: 'POST /api/check-url';
+  position: absolute;
+  top: 18px; right: 22px;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--ink-faint);
+  letter-spacing: 0.05em;
+}
+.check-label {
+  display: block;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.2rem;
+  margin-bottom: 16px;
+}
+.input-row {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1.5px solid var(--ink);
+  padding-bottom: 10px;
+  gap: 14px;
+}
+.input-row input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-family: var(--mono);
+  font-size: 1.05rem;
+  padding: 10px 0;
+  color: var(--ink);
+  outline: none;
+}
+.input-row input::placeholder { color: var(--ink-faint); font-family: var(--serif); font-style: italic; font-weight: 300; font-size: 1.15rem; }
+.btn {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 12px 28px;
+  border: none;
+  border-radius: 2px;
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+  white-space: nowrap;
+}
+.btn:hover { background: var(--accent-deep); }
+.btn:active { transform: scale(0.98); }
+.btn:disabled { opacity: 0.5; cursor: wait; }
+
+.privacy-note {
+  margin-top: 16px;
+  font-size: 0.82rem;
+  color: var(--ink-mute);
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.privacy-note::before { content: '⟶'; font-family: var(--mono); color: var(--ink-faint); }
+
+.example-row {
+  margin-top: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--ink-mute);
+  align-items: center;
+}
+.example-row strong { font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-faint); margin-right: 4px; }
+.example-chip {
+  background: var(--bg-alt);
+  padding: 4px 10px;
+  border-radius: 2px;
+  border: 1px solid var(--line);
+  cursor: pointer;
+  transition: background 0.2s;
+  text-decoration: none;
+  color: var(--ink-soft);
+}
+.example-chip:hover { background: var(--paper); color: var(--ink); }
+
+/* report */
+.report {
+  margin-top: 40px;
+  background: var(--paper);
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  padding: 0;
+  display: none;
+  animation: slidein 0.5s cubic-bezier(0.2, 0.7, 0.3, 1);
+  overflow: hidden;
+}
+.report.show { display: block; }
+
+@keyframes slidein {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.report-head {
+  padding: 24px 36px;
+  border-bottom: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
+  align-items: baseline;
+  background: var(--bg-alt);
+}
+.report-head .url {
+  font-family: var(--mono);
+  font-size: 0.98rem;
+  color: var(--ink);
+  word-break: break-all;
+}
+.report-head .stamp {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--ink-mute);
+  letter-spacing: 0.08em;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.report-section {
+  padding: 28px 36px;
+  border-bottom: 1px solid var(--line);
+}
+.report-section:last-child { border-bottom: none; }
+
+.report-section-title {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.report-section-title .status-pill {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  padding: 3px 10px;
+  border-radius: 2px;
+  text-transform: uppercase;
+}
+.status-pill.ok { background: rgba(78, 122, 94, 0.15); color: var(--safe-deep); }
+.status-pill.warn { background: rgba(184, 147, 90, 0.18); color: #6b4c1d; }
+.status-pill.bad { background: rgba(168, 83, 54, 0.18); color: var(--accent-deep); }
+.status-pill.neutral { background: var(--bg-alt); color: var(--ink-mute); }
+
+.kv {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 14px;
+  padding: 8px 0;
+  font-family: var(--mono);
+  font-size: 0.88rem;
+  border-bottom: 1px dashed var(--line);
+  align-items: baseline;
+}
+.kv:last-child { border-bottom: none; }
+.kv .k {
+  color: var(--ink-mute);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.72rem;
+}
+.kv .v {
+  color: var(--ink);
+  word-break: break-word;
+}
+.kv .v.muted { color: var(--ink-mute); font-style: italic; }
+.kv .v.ok { color: var(--safe-deep); }
+.kv .v.warn { color: #6b4c1d; }
+.kv .v.bad { color: var(--accent-deep); }
+.kv .mark {
+  display: inline-block;
+  width: 14px;
+  text-align: center;
+  margin-right: 6px;
+  font-weight: 600;
+}
+
+.summary {
+  background: var(--bg-alt);
+  padding: 28px 36px;
+  border-top: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 28px;
+}
+.summary-cell { text-align: center; }
+.summary-num {
+  font-family: var(--serif);
+  font-size: 2.3rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variation-settings: 'opsz' 144;
+}
+.summary-num.ok { color: var(--safe-deep); }
+.summary-num.warn { color: #6b4c1d; }
+.summary-num.bad { color: var(--accent-deep); }
+.summary-lbl {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  margin-top: 6px;
+}
+
+.spinner {
+  display: inline-block;
+  width: 14px; height: 14px;
+  border: 1.5px solid var(--ink-faint);
+  border-top-color: var(--ink);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* explanation */
+.explain {
+  margin-top: 80px;
+  padding: 80px 0;
+  border-top: 1px solid var(--line);
+  background: var(--bg-alt);
+}
+.explain h2 {
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  margin-bottom: 40px;
+  max-width: 20ch;
+  letter-spacing: -0.025em;
+}
+.explain h2 em { font-style: italic; color: var(--accent); }
+.explain-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 32px;
+}
+.explain-item {
+  padding: 24px 0;
+  border-top: 2px solid var(--ink);
+}
+.explain-item .num {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--ink-mute);
+  letter-spacing: 0.12em;
+  margin-bottom: 10px;
+}
+.explain-item h3 {
+  font-size: 1.2rem;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+.explain-item p {
+  font-size: 0.92rem;
+  color: var(--ink-soft);
+  line-height: 1.55;
+}
+
+/* footer */
+footer {
+  padding: 60px 0 40px;
+  border-top: 1px solid var(--line);
+  background: var(--bg-deep);
+  margin-top: 0;
+}
+.footer-inner {
+  max-width: 1200px; margin: 0 auto;
+  padding: 0 40px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 40px;
+  align-items: start;
+}
+.footer-left p {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.05rem;
+  color: var(--ink-soft);
+  max-width: 42ch;
+}
+.footer-meta {
+  margin-top: 24px;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--ink-mute);
+  letter-spacing: 0.08em;
+}
+.footer-right {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: right;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+}
+.footer-right a { text-decoration: none; transition: color 0.2s; }
+.footer-right a:hover { color: var(--accent); }
+
+::selection { background: var(--ink); color: var(--paper); }
+
+@media (max-width: 780px) {
+  .container, .nav-inner, .footer-inner { padding-left: 20px; padding-right: 20px; }
+  .hero { padding: 50px 0 24px; }
+  .hero h1 { font-size: clamp(2.2rem, 10vw, 3.6rem); }
+  .hero-sub { font-size: 1rem; margin-top: 24px; }
+  .check-card { padding: 24px 20px; }
+  .report-head, .report-section, .summary { padding-left: 20px; padding-right: 20px; }
+  .report-head { grid-template-columns: 1fr; }
+  .report-head .stamp { text-align: left; }
+  .kv { grid-template-columns: 120px 1fr; gap: 10px; font-size: 0.8rem; }
+  .input-row { flex-wrap: wrap; gap: 10px; }
+  .input-row input { width: 100%; font-size: 0.95rem; }
+  .btn { width: 100%; margin-top: 8px; }
+  .footer-inner { grid-template-columns: 1fr; }
+  .footer-right { text-align: left; }
+  .logo { font-size: 1.15rem; }
+  .nav-inner { padding: 14px 20px; }
+  .explain { padding: 60px 0; }
+  .explain-grid { gap: 24px; }
+
+  /* Hamburger nav */
+  .nav-toggle { display: block; z-index: 60; }
+  .nav-links {
+    position: fixed;
+    top: 54px;
+    left: 0; right: 0;
+    background: rgba(244, 239, 230, 0.98);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--line);
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 12px 20px 24px;
+    transform: translateY(-12px);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.25s cubic-bezier(0.2, 0.7, 0.3, 1), opacity 0.22s;
+  }
+  .nav-links.open {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .nav-links a {
+    font-size: 1.15rem;
+    padding: 14px 4px;
+    border-bottom: 1px solid var(--line);
+    font-family: var(--serif);
+    color: var(--ink);
+  }
+  .nav-links a:last-child { border-bottom: none; }
+}
+</style>
+</head>
+<body>
+
+<nav class="top">
+  <div class="nav-inner">
+    <a href="/" class="logo">
+      <span class="logo-mark"></span>
+      <span>Säkerkoll</span>
+    </a>
+    <button class="nav-toggle" id="nav-toggle" aria-label="Meny" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="nav-links" id="nav-links">
+      <a href="/">Start</a>
+      <a href="/#kolla">Lösenord</a>
+      <a href="/#bot">Botkampen</a>
+      <a href="/generator">Generator</a>
+      <a href="/url-koll" class="active">URL-koll</a>
+      <a href="/quiz">Säkerhetsquiz</a>
+      <a href="/#intrang">Intrång</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="container">
+    <div class="hero-eyebrow-row">
+      <span class="eyebrow">urlsäkerhetskontroll</span>
+      <span class="mono">v.1.0</span>
+    </div>
+    <h1>Är sidan <em>trygg?</em></h1>
+    <p class="hero-sub">Klistra in en webbadress — få en detaljerad rapport. Vi kollar HTTPS, certifikat, säkerhetsheaders, domänens ålder och varnar för typosquatting och kyrillska tecken som ser ut som latinska.</p>
+
+    <div class="check-card">
+      <label class="check-label" for="url-input">Webbadress att kontrollera</label>
+      <div class="input-row">
+        <input type="text" id="url-input" placeholder="t.ex. google.com eller https://blocket.se" autocomplete="off" spellcheck="false">
+        <button class="btn" id="btn-check" type="button">Kontrollera</button>
+      </div>
+      <p class="privacy-note">Vi gör ett HEAD/GET-anrop från en serverless-funktion för att hämta headers och TLS-info. Vi sparar inget.</p>
+      <div class="example-row">
+        <strong>Prova</strong>
+        <a href="#" class="example-chip" data-url="google.com">google.com</a>
+        <a href="#" class="example-chip" data-url="blocket.se">blocket.se</a>
+        <a href="#" class="example-chip" data-url="swedbank.se">swedbank.se</a>
+        <a href="#" class="example-chip" data-url="http://neverssl.com">neverssl.com</a>
+      </div>
+    </div>
+
+    <div class="report" id="report"></div>
+  </div>
+</section>
+
+<section class="explain">
+  <div class="container">
+    <h2>Vad <em>kollas</em> egentligen?</h2>
+    <div class="explain-grid">
+      <div class="explain-item">
+        <div class="num">01 · KRYPTERING</div>
+        <h3>HTTPS &amp; certifikat</h3>
+        <p>Om sidan använder kryptering, vilken TLS-version den stödjer, vem som utfärdat certifikatet och hur länge det är giltigt. Utan HTTPS kan vem som helst på samma nätverk läsa vad du skickar.</p>
+      </div>
+      <div class="explain-item">
+        <div class="num">02 · HEADERS</div>
+        <h3>Säkerhetsheaders</h3>
+        <p>Moderna sidor skickar headers som HSTS, CSP och X-Frame-Options. De skyddar mot attacker som clickjacking och MITM. Sidor som saknar dem är ofta äldre eller slarvigt byggda.</p>
+      </div>
+      <div class="explain-item">
+        <div class="num">03 · DOMÄN</div>
+        <h3>Ålder &amp; registrering</h3>
+        <p>Phishing-sidor är ofta nyregistrerade. En domän som registrerades för några veckor sedan och låtsas vara Swedbank är alltid misstänkt. Vi kollar via RDAP (öppen WHOIS-standard).</p>
+      </div>
+      <div class="explain-item">
+        <div class="num">04 · NAMN</div>
+        <h3>Typosquatting &amp; IDN</h3>
+        <p>Angripare köper domäner som <span class="mono" style="font-size:0.85rem">g00gle.com</span> eller använder kyrilliska bokstäver som ser ut som latinska (<span class="mono" style="font-size:0.85rem">рaypal.com</span>). Vi jämför med kända domäner.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-left">
+      <p>Ingen spårning, inga cookies, ingen reklam. Bara en teknisk rapport om sidan du vill besöka.</p>
+      <div class="footer-meta">SÄKERKOLL · URL-KOLL · BYGGD AV CETTO</div>
+    </div>
+    <div class="footer-right">
+      <a href="/">← Tillbaka till lösenordskollen</a>
+      <a href="https://rdap.org" target="_blank" rel="noopener">Data: RDAP ↗</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Mobile nav toggle
+(function() {
+  const toggle = document.getElementById('nav-toggle');
+  const links = document.getElementById('nav-links');
+  if (!toggle || !links) return;
+  toggle.addEventListener('click', () => {
+    const open = toggle.classList.toggle('open');
+    links.classList.toggle('open', open);
+    toggle.setAttribute('aria-expanded', open);
+  });
+  links.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', () => {
+      toggle.classList.remove('open');
+      links.classList.remove('open');
+      toggle.setAttribute('aria-expanded', 'false');
+    });
+  });
+})();
+
+const urlInput = document.getElementById('url-input');
+const btnCheck = document.getElementById('btn-check');
+const reportEl = document.getElementById('report');
+
+document.querySelectorAll('.example-chip').forEach(chip => {
+  chip.addEventListener('click', e => {
+    e.preventDefault();
+    urlInput.value = chip.dataset.url;
+    runCheck();
+  });
+});
+
+btnCheck.addEventListener('click', runCheck);
+urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') runCheck(); });
+
+async function runCheck() {
+  const url = urlInput.value.trim();
+  if (!url) { urlInput.focus(); return; }
+
+  btnCheck.disabled = true;
+  btnCheck.innerHTML = '<span class="spinner"></span>Kollar...';
+  reportEl.classList.remove('show');
+
+  try {
+    const response = await fetch('/api/check-url?url=' + encodeURIComponent(url));
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Något gick fel');
+    renderReport(data);
+  } catch (e) {
+    reportEl.innerHTML = `
+      <div class="report-head"><span class="url">Kunde inte kontrollera</span><span class="stamp">FEL</span></div>
+      <div class="report-section"><div class="kv"><span class="k">Orsak</span><span class="v bad">${escapeHtml(e.message)}</span></div></div>
+    `;
+    reportEl.classList.add('show');
+  } finally {
+    btnCheck.disabled = false;
+    btnCheck.textContent = 'Kontrollera';
+  }
+}
+
+function renderReport(d) {
+  const fetchR = d.fetch || {};
+  const certR = d.cert || {};
+  const whoisR = d.whois || {};
+  const typoR = d.typosquat || {};
+
+  let ok = 0, warn = 0, bad = 0;
+  const count = (s) => { if (s === 'ok') ok++; else if (s === 'warn') warn++; else if (s === 'bad') bad++; };
+
+  // crypto status
+  const httpsOk = d.protocol === 'https';
+  const certValid = certR.valid;
+  const certDays = certR.daysLeft;
+  const cryptoStatus = !httpsOk ? 'bad' : (certValid ? (certDays != null && certDays < 3 ? 'warn' : 'ok') : 'bad');
+  count(cryptoStatus); // one summary vote
+
+  // headers status
+  const hstsOk = !!fetchR.hsts;
+  const cspOk = !!fetchR.csp;
+  const xFrameOk = !!fetchR.xFrame;
+  const xContentOk = !!fetchR.xContent;
+  const headerHits = [hstsOk, cspOk, xFrameOk, xContentOk].filter(Boolean).length;
+  const headerStatus = headerHits >= 3 ? 'ok' : (headerHits >= 1 ? 'warn' : 'bad');
+  count(headerStatus);
+
+  // domain status
+  const ageDays = whoisR.ageDays;
+  const domainStatus = ageDays == null ? 'neutral' : (ageDays < 30 ? 'bad' : (ageDays < 180 ? 'warn' : 'ok'));
+  if (domainStatus !== 'neutral') count(domainStatus);
+
+  // typo status
+  const typoFlags = (typoR.hasPunycode ? 1 : 0) + (typoR.hasMixedScripts ? 1 : 0) + (typoR.similarTo && typoR.similarTo.length ? 1 : 0);
+  const typoStatus = typoFlags === 0 ? 'ok' : (typoFlags === 1 ? 'warn' : 'bad');
+  count(typoStatus);
+
+  const html = `
+    <div class="report-head">
+      <span class="url">${escapeHtml(d.input)}</span>
+      <span class="stamp">${escapeHtml(new Date(d.timestamp).toLocaleString('sv-SE'))}</span>
+    </div>
+
+    <div class="report-section">
+      <div class="report-section-title">
+        <span>01 · Kryptering &amp; certifikat</span>
+        <span class="status-pill ${cryptoStatus}">${statusLabel(cryptoStatus)}</span>
+      </div>
+      <div class="kv"><span class="k">Protokoll</span><span class="v ${httpsOk ? 'ok' : 'bad'}">${httpsOk ? '✓ HTTPS' : '✗ HTTP (okrypterat)'}</span></div>
+      ${httpsOk ? `
+        <div class="kv"><span class="k">TLS-version</span><span class="v">${escapeHtml(certR.protocol || 'okänd')}</span></div>
+        <div class="kv"><span class="k">Cipher</span><span class="v">${escapeHtml(certR.cipher || '—')}</span></div>
+        <div class="kv"><span class="k">Cert giltigt</span><span class="v ${certValid ? 'ok' : 'bad'}">${certValid ? '✓ ja' : '✗ nej (' + escapeHtml(certR.authError || 'okänt fel') + ')'}</span></div>
+        <div class="kv"><span class="k">Utfärdare</span><span class="v">${escapeHtml(certR.issuer || '—')}</span></div>
+        <div class="kv"><span class="k">Giltigt till</span><span class="v ${certDays != null && certDays < 3 ? 'warn' : ''}">${escapeHtml((certR.validTo || '').slice(0, 24))} ${certDays != null ? `(${certDays} dagar kvar)` : ''}</span></div>
+      ` : `
+        <div class="kv"><span class="k">Konsekvens</span><span class="v bad">Data skickas okrypterat — vem som helst på samma nätverk kan läsa det.</span></div>
+      `}
+    </div>
+
+    <div class="report-section">
+      <div class="report-section-title">
+        <span>02 · Säkerhetsheaders</span>
+        <span class="status-pill ${headerStatus}">${statusLabel(headerStatus)} · ${headerHits} av 4</span>
+      </div>
+      <div class="kv"><span class="k">HSTS</span><span class="v ${hstsOk ? 'ok' : 'warn'}"><span class="mark">${hstsOk ? '✓' : '−'}</span>${hstsOk ? escapeHtml(fetchR.hsts) : 'saknas'}</span></div>
+      <div class="kv"><span class="k">Content-Security-Policy</span><span class="v ${cspOk ? 'ok' : 'warn'}"><span class="mark">${cspOk ? '✓' : '−'}</span>${cspOk ? escapeHtml(truncate(fetchR.csp, 70)) : 'saknas'}</span></div>
+      <div class="kv"><span class="k">X-Frame-Options</span><span class="v ${xFrameOk ? 'ok' : 'warn'}"><span class="mark">${xFrameOk ? '✓' : '−'}</span>${xFrameOk ? escapeHtml(fetchR.xFrame) : 'saknas'}</span></div>
+      <div class="kv"><span class="k">X-Content-Type-Options</span><span class="v ${xContentOk ? 'ok' : 'warn'}"><span class="mark">${xContentOk ? '✓' : '−'}</span>${xContentOk ? escapeHtml(fetchR.xContent) : 'saknas'}</span></div>
+      <div class="kv"><span class="k">Referrer-Policy</span><span class="v ${fetchR.referrer ? 'ok' : 'muted'}"><span class="mark">${fetchR.referrer ? '✓' : '−'}</span>${escapeHtml(fetchR.referrer || 'saknas')}</span></div>
+      <div class="kv"><span class="k">Permissions-Policy</span><span class="v ${fetchR.permissions ? 'ok' : 'muted'}"><span class="mark">${fetchR.permissions ? '✓' : '−'}</span>${escapeHtml(truncate(fetchR.permissions, 70) || 'saknas')}</span></div>
+      <div class="kv"><span class="k">Server</span><span class="v muted">${escapeHtml(fetchR.server || '—')}</span></div>
+      <div class="kv"><span class="k">HTTP-status</span><span class="v">${fetchR.status || '—'} ${fetchR.redirected ? '(omdirigering)' : ''}</span></div>
+    </div>
+
+    <div class="report-section">
+      <div class="report-section-title">
+        <span>03 · Domän &amp; registrering</span>
+        <span class="status-pill ${domainStatus}">${domainStatus === 'neutral' ? 'okänt' : statusLabel(domainStatus)}</span>
+      </div>
+      <div class="kv"><span class="k">Apex-domän</span><span class="v">${escapeHtml(typoR.apex || whoisR.apex || d.hostname)}</span></div>
+      ${whoisR.registered ? `
+        <div class="kv"><span class="k">Registrerad</span><span class="v ${ageDays < 30 ? 'bad' : (ageDays < 180 ? 'warn' : 'ok')}">${escapeHtml(whoisR.registered)} (${whoisR.ageDays} dagar, ~${whoisR.ageYears} år)</span></div>
+        <div class="kv"><span class="k">Går ut</span><span class="v">${escapeHtml(whoisR.expires || '—')}</span></div>
+        <div class="kv"><span class="k">Senast ändrad</span><span class="v">${escapeHtml(whoisR.updated || '—')}</span></div>
+        <div class="kv"><span class="k">Registrar</span><span class="v">${escapeHtml(whoisR.registrar || '—')}</span></div>
+      ` : `
+        <div class="kv"><span class="k">Info</span><span class="v muted">${escapeHtml(whoisR.error || 'ingen whois-data tillgänglig')}</span></div>
+      `}
+    </div>
+
+    <div class="report-section">
+      <div class="report-section-title">
+        <span>04 · Typosquatting &amp; konstiga tecken</span>
+        <span class="status-pill ${typoStatus}">${statusLabel(typoStatus)}</span>
+      </div>
+      <div class="kv"><span class="k">Punycode</span><span class="v ${typoR.hasPunycode ? 'bad' : 'ok'}"><span class="mark">${typoR.hasPunycode ? '⚠' : '✓'}</span>${typoR.hasPunycode ? 'JA — kan dölja utländska tecken' : 'nej'}</span></div>
+      <div class="kv"><span class="k">Icke-latinska tecken</span><span class="v ${typoR.hasMixedScripts ? 'bad' : 'ok'}"><span class="mark">${typoR.hasMixedScripts ? '⚠' : '✓'}</span>${typoR.hasMixedScripts ? 'JA — kyrilliska eller liknande' : 'nej'}</span></div>
+      <div class="kv"><span class="k">Många subdomäner</span><span class="v ${typoR.excessiveSubdomains ? 'warn' : 'ok'}"><span class="mark">${typoR.excessiveSubdomains ? '⚠' : '✓'}</span>${typoR.excessiveSubdomains ? 'ja (>4 nivåer)' : 'nej'}</span></div>
+      <div class="kv"><span class="k">Liknar kända domäner</span><span class="v ${typoR.similarTo && typoR.similarTo.length ? 'bad' : 'ok'}">
+        ${typoR.similarTo && typoR.similarTo.length
+          ? typoR.similarTo.map(s => `<span class="mark">⚠</span>nära <strong>${escapeHtml(s.target)}</strong> (${s.distance} tecken diff)`).join('<br>')
+          : '<span class="mark">✓</span>ingen träff'}
+      </span></div>
+    </div>
+
+    <div class="summary">
+      <div class="summary-cell"><div class="summary-num ok">${ok}</div><div class="summary-lbl">OK</div></div>
+      <div class="summary-cell"><div class="summary-num warn">${warn}</div><div class="summary-lbl">VARNING</div></div>
+      <div class="summary-cell"><div class="summary-num bad">${bad}</div><div class="summary-lbl">ALLVARLIGT</div></div>
+    </div>
+  `;
+
+  reportEl.innerHTML = html;
+  reportEl.classList.add('show');
+  reportEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function statusLabel(s) {
+  return { ok: 'OK', warn: 'varning', bad: 'allvarligt', neutral: 'okänt' }[s] || s;
+}
+
+function truncate(s, n) {
+  if (!s) return '';
+  return s.length > n ? s.slice(0, n) + '…' : s;
+}
+
+function escapeHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+</script>
+<script defer src="/_vercel/insights/script.js"></script>
+<script defer src="/_vercel/speed-insights/script.js"></script>
+</body>
+</html>

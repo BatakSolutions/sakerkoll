@@ -1,0 +1,1543 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Säkerhetspoäng — Säkerkoll</title>
+<meta name="description" content="Tio frågor om hur du skyddar dig på nätet. Få din personliga säkerhetspoäng och konkreta tips på vad du borde fixa.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #f4efe6;
+  --bg-alt: #ebe4d4;
+  --bg-deep: #e5ddc9;
+  --ink: #0e2a47;
+  --ink-soft: #3d5570;
+  --ink-mute: #6b7a8f;
+  --ink-faint: #a8b0bc;
+  --line: rgba(14, 42, 71, 0.12);
+  --line-strong: rgba(14, 42, 71, 0.25);
+  --paper: #faf6ed;
+  --accent: #c76a4a;
+  --accent-deep: #a85336;
+  --safe: #4e7a5e;
+  --safe-deep: #36583f;
+  --warn: #b8935a;
+  --danger: #a85336;
+  --serif: 'Fraunces', 'Times New Roman', serif;
+  --sans: 'Geist', -apple-system, sans-serif;
+  --mono: 'Geist Mono', 'Courier New', monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  position: relative;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* grain overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.35;
+  z-index: 100;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.055 0 0 0 0 0.165 0 0 0 0 0.28 0 0 0 0.15 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  mix-blend-mode: multiply;
+}
+
+/* guide rails */
+.guides {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+.guides::before, .guides::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 1px;
+  background: var(--line);
+}
+.guides::before { left: 40px; }
+.guides::after { right: 40px; }
+
+h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: -0.01em; }
+h1 { font-variation-settings: 'opsz' 144; }
+h2 { font-variation-settings: 'opsz' 72; }
+
+a { color: inherit; text-decoration: none; }
+
+.mono { font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.06em; color: var(--ink-soft); }
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.eyebrow::before { content: ''; width: 28px; height: 1px; background: var(--ink-soft); }
+
+.container { max-width: 1100px; margin: 0 auto; padding: 0 40px; position: relative; z-index: 1; }
+
+/* ---- Top nav (matches other sub-pages) ---- */
+nav.top {
+  position: sticky; top: 0; z-index: 50;
+  backdrop-filter: blur(12px) saturate(1.1);
+  -webkit-backdrop-filter: blur(12px) saturate(1.1);
+  background: rgba(244, 239, 230, 0.78);
+  border-bottom: 1px solid var(--line);
+}
+.nav-inner {
+  max-width: 1200px; margin: 0 auto;
+  padding: 18px 40px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.logo {
+  font-family: var(--serif);
+  font-size: 1.3rem;
+  font-weight: 500;
+  display: flex; align-items: center; gap: 10px;
+  text-decoration: none;
+  color: var(--ink);
+}
+.logo-mark {
+  width: 22px; height: 22px;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+  position: relative;
+}
+.logo-mark::after { content: ''; position: absolute; inset: 4px; background: var(--ink); border-radius: 50%; }
+.nav-links { display: flex; gap: 28px; align-items: center; }
+.nav-links a {
+  text-decoration: none;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--ink); }
+.nav-links a.active { color: var(--ink); font-weight: 500; }
+
+.nav-toggle {
+  display: none;
+  background: transparent;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  margin: -10px;
+}
+.nav-toggle span {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: var(--ink);
+  margin: 5px 0;
+  transition: transform 0.3s, opacity 0.3s;
+  border-radius: 1px;
+}
+.nav-toggle.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.nav-toggle.open span:nth-child(2) { opacity: 0; }
+.nav-toggle.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* ---- Stage ---- */
+main {
+  min-height: calc(100vh - 90px);
+  display: flex;
+  align-items: stretch;
+  position: relative;
+}
+
+.stage {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 0;
+}
+
+/* ---- Intro screen ---- */
+.intro {
+  max-width: 760px;
+  text-align: left;
+  animation: fadeIn .6s ease both;
+}
+.intro .number-mark {
+  font-family: var(--serif);
+  font-size: clamp(80px, 14vw, 180px);
+  font-style: italic;
+  line-height: 0.85;
+  color: var(--accent);
+  letter-spacing: -0.04em;
+  margin-bottom: 20px;
+  font-variation-settings: 'opsz' 144;
+  font-weight: 300;
+}
+.intro h1 {
+  font-size: clamp(2.4rem, 5vw, 4rem);
+  line-height: 1.02;
+  margin-bottom: 24px;
+  max-width: 720px;
+}
+.intro h1 em {
+  font-style: italic;
+  color: var(--accent);
+  font-variation-settings: 'opsz' 144;
+}
+.intro p {
+  font-size: 1.12rem;
+  color: var(--ink-soft);
+  max-width: 560px;
+  margin-bottom: 36px;
+  line-height: 1.6;
+}
+.intro-meta {
+  display: flex;
+  gap: 36px;
+  margin-bottom: 44px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+.intro-meta .item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.intro-meta .item .label {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+.intro-meta .item .val {
+  font-family: var(--serif);
+  font-size: 1.4rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 28px;
+  background: var(--ink);
+  color: var(--paper);
+  border: none;
+  border-radius: 0;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all .25s;
+  font-weight: 500;
+}
+.btn:hover { background: var(--accent); transform: translateY(-2px); }
+.btn .arrow {
+  display: inline-block;
+  transition: transform .25s;
+}
+.btn:hover .arrow { transform: translateX(4px); }
+
+.btn.ghost {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--line-strong);
+}
+.btn.ghost:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+.kbd-hint {
+  margin-top: 28px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  color: var(--ink-mute);
+  text-transform: uppercase;
+}
+.kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 8px;
+  background: var(--paper);
+  border: 1px solid var(--line-strong);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--ink);
+  letter-spacing: 0;
+}
+
+/* ---- Quiz screen ---- */
+.quiz {
+  width: 100%;
+  max-width: 880px;
+  animation: fadeIn .5s ease both;
+}
+.q-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 56px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+}
+.q-counter {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.4rem;
+  color: var(--ink-soft);
+  font-variation-settings: 'opsz' 72;
+}
+.q-counter strong { color: var(--ink); font-style: normal; font-family: var(--serif); }
+.q-progress {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+  margin: 0 40px;
+  align-self: center;
+}
+.q-progress .tick {
+  flex: 1;
+  height: 2px;
+  background: var(--line);
+  transition: background .4s ease;
+}
+.q-progress .tick.done { background: var(--accent); }
+.q-progress .tick.current { background: var(--ink); }
+.q-cat {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent-deep);
+}
+
+.q-text {
+  font-family: var(--serif);
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  line-height: 1.15;
+  margin-bottom: 14px;
+  letter-spacing: -0.015em;
+  font-variation-settings: 'opsz' 96;
+  font-weight: 400;
+}
+.q-sub {
+  font-family: var(--sans);
+  font-size: 1.02rem;
+  color: var(--ink-soft);
+  margin-bottom: 48px;
+  max-width: 620px;
+  line-height: 1.55;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 44px;
+}
+.opt {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  padding: 22px 26px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  cursor: pointer;
+  transition: all .2s ease;
+  position: relative;
+  text-align: left;
+}
+.opt:hover {
+  border-color: var(--ink-soft);
+  transform: translateX(4px);
+}
+.opt.focused {
+  border-color: var(--accent);
+  background: var(--bg-alt);
+  transform: translateX(8px);
+  box-shadow: -8px 8px 0 var(--ink);
+}
+.opt .marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--ink-soft);
+  background: var(--bg);
+  flex-shrink: 0;
+  transition: all .2s;
+}
+.opt.focused .marker {
+  background: var(--accent);
+  color: var(--paper);
+  border-color: var(--accent);
+}
+.opt .label-wrap {
+  flex: 1;
+}
+.opt .label {
+  font-family: var(--sans);
+  font-size: 1.08rem;
+  font-weight: 500;
+  color: var(--ink);
+  margin-bottom: 2px;
+}
+.opt .desc {
+  font-family: var(--sans);
+  font-size: 0.88rem;
+  color: var(--ink-mute);
+}
+.opt .ind {
+  opacity: 0;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent-deep);
+  transition: opacity .2s;
+}
+.opt.focused .ind { opacity: 1; }
+
+.q-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+.q-foot .left {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  color: var(--ink-mute);
+  text-transform: uppercase;
+}
+.q-foot .left .group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.q-foot .left .kbd { font-size: 0.66rem; min-width: 22px; height: 22px; }
+.btn-back {
+  background: transparent;
+  border: none;
+  color: var(--ink-mute);
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: color .2s;
+}
+.btn-back:hover { color: var(--ink); }
+.btn-back:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* ---- Result screen ---- */
+.result {
+  width: 100%;
+  max-width: 980px;
+  animation: fadeIn .7s ease both;
+}
+.result-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 64px;
+  align-items: start;
+  margin-bottom: 60px;
+}
+.r-eyebrow { margin-bottom: 18px; }
+.r-title {
+  font-family: var(--serif);
+  font-size: clamp(2.4rem, 5vw, 3.6rem);
+  line-height: 1.05;
+  margin-bottom: 24px;
+  letter-spacing: -0.015em;
+}
+.r-title em { font-style: italic; }
+.r-summary {
+  font-size: 1.1rem;
+  color: var(--ink-soft);
+  margin-bottom: 36px;
+  line-height: 1.6;
+}
+
+.score-card {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  padding: 40px;
+  position: relative;
+  box-shadow: -10px 10px 0 var(--ink);
+}
+.score-card .label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+.score-card .label-row .l {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.score-card .label-row .stamp {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border: 1px solid var(--accent);
+  color: var(--accent-deep);
+  border-radius: 100px;
+}
+
+.score-num {
+  font-family: var(--serif);
+  font-size: clamp(120px, 18vw, 220px);
+  line-height: 0.9;
+  font-variation-settings: 'opsz' 144;
+  font-weight: 400;
+  letter-spacing: -0.04em;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.score-num .of {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.6rem;
+  color: var(--ink-mute);
+  font-variation-settings: 'opsz' 72;
+}
+.score-bar {
+  width: 100%;
+  height: 6px;
+  background: var(--bg-deep);
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+.score-bar .fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--accent);
+  width: 0%;
+  transition: width 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.score-rating {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.4rem;
+  color: var(--ink-soft);
+  font-variation-settings: 'opsz' 72;
+}
+
+.tips-block {
+  margin-bottom: 60px;
+}
+.tips-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+.tips-head h3 {
+  font-family: var(--serif);
+  font-size: 1.8rem;
+  font-variation-settings: 'opsz' 72;
+}
+.tips-head .count {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.tip {
+  display: grid;
+  grid-template-columns: 60px 1fr auto;
+  gap: 28px;
+  padding: 26px 0;
+  border-bottom: 1px solid var(--line);
+  align-items: baseline;
+}
+.tip:last-child { border-bottom: none; }
+.tip .num {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 2rem;
+  color: var(--accent);
+  font-variation-settings: 'opsz' 72;
+  line-height: 1;
+}
+.tip .body h4 {
+  font-family: var(--serif);
+  font-size: 1.4rem;
+  margin-bottom: 6px;
+  font-variation-settings: 'opsz' 72;
+  line-height: 1.2;
+}
+.tip .body p {
+  color: var(--ink-soft);
+  font-size: 0.96rem;
+  line-height: 1.5;
+}
+.tip .severity {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  border-radius: 100px;
+  border: 1px solid var(--line-strong);
+  white-space: nowrap;
+}
+.tip .severity.high { color: var(--accent-deep); border-color: var(--accent); }
+.tip .severity.med { color: var(--warn); border-color: var(--warn); }
+.tip .severity.low { color: var(--ink-soft); }
+
+.actions {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding-top: 36px;
+  border-top: 1px solid var(--line);
+}
+
+/* ---- Screens transition ---- */
+.screen { display: none; }
+.screen.active { display: flex; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideOut {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(-30px); }
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.exiting { animation: slideOut .25s ease both; }
+.entering { animation: slideIn .35s ease both; }
+
+/* ---- Share modal ---- */
+.modal-bg {
+  position: fixed;
+  inset: 0;
+  background: rgba(14, 42, 71, 0.55);
+  z-index: 200;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn .3s ease;
+  padding: 24px;
+}
+.modal-bg.open { display: flex; }
+.modal {
+  background: var(--bg);
+  padding: 36px;
+  max-width: 540px;
+  width: 100%;
+  border: 1px solid var(--line-strong);
+  position: relative;
+  box-shadow: -14px 14px 0 var(--ink);
+}
+.modal h3 {
+  font-family: var(--serif);
+  font-size: 1.6rem;
+  margin-bottom: 8px;
+}
+.modal p {
+  color: var(--ink-soft);
+  font-size: 0.96rem;
+  margin-bottom: 24px;
+}
+.modal .preview {
+  width: 100%;
+  aspect-ratio: 1;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  margin-bottom: 24px;
+  display: block;
+}
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: none;
+  border: none;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  cursor: pointer;
+  color: var(--ink-soft);
+  padding: 6px 10px;
+  letter-spacing: 0.12em;
+}
+.modal-close:hover { color: var(--ink); }
+
+/* ---- Footer ---- */
+footer {
+  border-top: 1px solid var(--line);
+  padding: 32px 0;
+  margin-top: 60px;
+  position: relative;
+  z-index: 1;
+}
+.foot-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+.foot-row a:hover { color: var(--accent); }
+
+/* ---- Responsive ---- */
+@media (max-width: 760px) {
+  .container { padding: 0 24px; }
+  .guides::before { left: 24px; }
+  .guides::after { right: 24px; }
+  .nav-inner { padding: 14px 20px; }
+
+  /* Hamburger nav */
+  .nav-toggle { display: block; z-index: 60; }
+  .nav-links {
+    position: fixed;
+    top: 54px;
+    left: 0; right: 0;
+    background: rgba(244, 239, 230, 0.98);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--line);
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 12px 20px 24px;
+    transform: translateY(-12px);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.25s cubic-bezier(0.2, 0.7, 0.3, 1), opacity 0.22s;
+    z-index: 55;
+  }
+  .nav-links.open {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .nav-links a {
+    font-size: 1.15rem;
+    padding: 14px 4px;
+    border-bottom: 1px solid var(--line);
+    font-family: var(--serif);
+    color: var(--ink);
+  }
+  .nav-links a:last-child { border-bottom: none; }
+  .nav-links a.active { color: var(--accent); }
+  .intro-meta { flex-wrap: wrap; gap: 24px; }
+  .q-head { margin-bottom: 36px; flex-wrap: wrap; gap: 12px; }
+  .q-progress { margin: 0; order: 3; flex-basis: 100%; }
+  .opt { padding: 18px 18px; gap: 16px; }
+  .opt .marker { width: 28px; height: 28px; font-size: 0.72rem; }
+  .opt .label { font-size: 1rem; }
+  .opt:hover, .opt.focused { transform: none; box-shadow: none; }
+  .opt.focused { box-shadow: -4px 4px 0 var(--ink); }
+  .result-grid { grid-template-columns: 1fr; gap: 36px; }
+  .score-card { padding: 28px; }
+  .score-card { box-shadow: -6px 6px 0 var(--ink); }
+  .tip { grid-template-columns: 40px 1fr; gap: 16px; }
+  .tip .severity { grid-column: 2; justify-self: start; margin-top: 6px; }
+  .q-foot .left .group:not(.always) { display: none; }
+  .kbd-hint .group:not(.always) { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="guides"></div>
+
+<nav class="top">
+  <div class="nav-inner">
+    <a href="/" class="logo">
+      <span class="logo-mark"></span>
+      <span>Säkerkoll</span>
+    </a>
+    <button class="nav-toggle" id="nav-toggle" aria-label="Meny" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="nav-links" id="nav-links">
+      <a href="/">Start</a>
+      <a href="/#kolla">Lösenord</a>
+      <a href="/#bot">Botkampen</a>
+      <a href="/generator">Generator</a>
+      <a href="/url-koll">URL-koll</a>
+      <a href="/quiz" class="active">Säkerhetsquiz</a>
+      <a href="/#intrang">Intrång</a>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <!-- ============ INTRO ============ -->
+  <section class="screen active stage" id="screen-intro">
+    <div class="container">
+      <div class="intro">
+        <div class="number-mark">10</div>
+        <span class="eyebrow">Säkerhetspoäng &mdash; en personlig analys</span>
+        <h1 style="margin-top:18px;">Hur skyddad är du <em>egentligen</em> på nätet?</h1>
+        <p>Tio frågor om dina vanor. Vi räknar ut en poäng från noll till hundra och säger exakt vad du borde fixa först. Inga svar sparas, ingen spårning. Tar mindre än två minuter.</p>
+
+        <div class="intro-meta">
+          <div class="item">
+            <span class="label">Frågor</span>
+            <span class="val">10</span>
+          </div>
+          <div class="item">
+            <span class="label">Tid</span>
+            <span class="val">≈ 90 sek</span>
+          </div>
+          <div class="item">
+            <span class="label">Sparas</span>
+            <span class="val">Ingenting</span>
+          </div>
+        </div>
+
+        <button class="btn" id="start-btn">
+          Starta analysen
+          <span class="arrow">→</span>
+        </button>
+
+        <div class="kbd-hint">
+          <div class="group">Använd <span class="kbd">↑</span><span class="kbd">↓</span> för att välja</div>
+          <div class="group">tryck <span class="kbd">Enter</span> för att gå vidare</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="screen stage" id="screen-quiz">
+    <div class="container">
+      <div class="quiz">
+        <div class="q-head">
+          <div class="q-counter">Fråga <strong id="q-current">01</strong> <span style="color:var(--ink-faint);"> / </span><span id="q-total">10</span></div>
+          <div class="q-progress" id="q-progress"></div>
+          <div class="q-cat" id="q-cat">Lösenord</div>
+        </div>
+
+        <h2 class="q-text" id="q-text">Frågetext här</h2>
+        <p class="q-sub" id="q-sub">Underrubrik här</p>
+
+        <div class="options" id="options"></div>
+
+        <div class="q-foot">
+          <div class="left">
+            <div class="group"><span class="kbd">↑</span><span class="kbd">↓</span> välj</div>
+            <div class="group"><span class="kbd">Enter</span> nästa</div>
+            <div class="group always"><span class="kbd">1</span>–<span class="kbd">4</span> snabbval</div>
+          </div>
+          <button class="btn-back" id="back-btn">← tillbaka</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ RESULT ============ -->
+  <section class="screen stage" id="screen-result">
+    <div class="container">
+      <div class="result">
+        <div class="result-grid">
+          <div>
+            <div class="r-eyebrow"><span class="eyebrow">Din säkerhetsanalys</span></div>
+            <h2 class="r-title" id="r-title">Här är vad vi hittade.</h2>
+            <p class="r-summary" id="r-summary">Sammanfattning kommer här.</p>
+            <div style="display:flex;gap:24px;flex-wrap:wrap;font-family:var(--mono);font-size:0.74rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-soft);">
+              <div>10 frågor analyserade</div>
+              <div>Inget sparat</div>
+            </div>
+          </div>
+
+          <div class="score-card">
+            <div class="label-row">
+              <span class="l">Säkerhetspoäng</span>
+              <span class="stamp" id="r-stamp">Analys klar</span>
+            </div>
+            <div class="score-num">
+              <span id="r-score">0</span>
+              <span class="of">/ 100</span>
+            </div>
+            <div class="score-bar"><div class="fill" id="r-bar"></div></div>
+            <div class="score-rating" id="r-rating">Beräknar &hellip;</div>
+          </div>
+        </div>
+
+        <div class="tips-block">
+          <div class="tips-head">
+            <h3>Vad du borde fixa först</h3>
+            <span class="count" id="tips-count">0 tips</span>
+          </div>
+          <div id="tips"></div>
+        </div>
+
+        <div class="actions">
+          <button class="btn" id="share-btn">
+            Dela resultatet
+            <span class="arrow">↗</span>
+          </button>
+          <button class="btn ghost" id="restart-btn">Gör om quizet</button>
+          <a class="btn ghost" href="/">Tillbaka till start</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="foot-row">
+      <div>© 2026 Säkerkoll &middot; Allt körs i din webbläsare</div>
+      <div><a href="/">säkerkoll.se</a></div>
+    </div>
+  </div>
+</footer>
+
+<!-- Share modal -->
+<div class="modal-bg" id="modal-bg">
+  <div class="modal">
+    <button class="modal-close" id="modal-close">stäng ✕</button>
+    <h3>Dela ditt resultat</h3>
+    <p>Spara bilden eller skicka direkt till en vän — utmana dem att slå din poäng.</p>
+    <canvas class="preview" id="share-canvas" width="1080" height="1080"></canvas>
+    <div class="modal-actions">
+      <button class="btn" id="download-btn">
+        Ladda ner bild
+        <span class="arrow">↓</span>
+      </button>
+      <button class="btn ghost" id="copy-btn">Kopiera länk</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// MOBILE NAV TOGGLE
+// ============================================================
+(function() {
+  const toggle = document.getElementById('nav-toggle');
+  const links = document.getElementById('nav-links');
+  if (!toggle || !links) return;
+  toggle.addEventListener('click', () => {
+    const open = toggle.classList.toggle('open');
+    links.classList.toggle('open', open);
+    toggle.setAttribute('aria-expanded', open);
+  });
+  links.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', () => {
+      toggle.classList.remove('open');
+      links.classList.remove('open');
+      toggle.setAttribute('aria-expanded', 'false');
+    });
+  });
+})();
+
+// ============================================================
+// FRÅGOR
+// ============================================================
+const QUESTIONS = [
+  {
+    cat: 'Lösenord',
+    q: 'Använder du samma lösenord på flera sajter?',
+    sub: 'Om en sajt läcker så kan hackare prova samma lösenord på Insta, Snap, Steam — överallt.',
+    options: [
+      { label: 'Ja, mer eller mindre samma överallt', desc: 'Snabbt men farligt — en läcka räcker', score: 0 },
+      { label: 'Lite olika, men variationer på samma', desc: 'T.ex. "Hund123" på en, "Hund1234" på annan', score: 4 },
+      { label: 'Olika på de viktigaste', desc: 'Mejl och bank har egna, resten delas', score: 7 },
+      { label: 'Helt unika på varje sajt', desc: 'Lösenordshanterare eller bra minne', score: 10 }
+    ]
+  },
+  {
+    cat: 'Tvåfaktor',
+    q: 'Har du tvåfaktor (2FA) på din mejl?',
+    sub: 'Mejlen är nyckeln till alla andra konton. Tappar du den tappar du allt.',
+    options: [
+      { label: 'Vet inte vad det är', desc: 'Kolla det här efter quizet — viktigast av allt', score: 0 },
+      { label: 'Nej, har inte aktiverat det', desc: 'Bara lösenord skyddar mejlen just nu', score: 0 },
+      { label: 'Ja, via SMS-kod', desc: 'Bättre än inget men SMS kan kapas', score: 6 },
+      { label: 'Ja, via app eller säkerhetsnyckel', desc: 'Authenticator, Authy, YubiKey eller liknande', score: 10 }
+    ]
+  },
+  {
+    cat: 'Lösenordshanterare',
+    q: 'Använder du en lösenordshanterare?',
+    sub: 'En app som kommer ihåg alla dina lösenord så du slipper. Bitwarden, 1Password, eller den i webbläsaren.',
+    options: [
+      { label: 'Nej och vill inte', desc: 'Litar mer på huvudet eller en lapp', score: 0 },
+      { label: 'Nej, men har funderat', desc: 'Vet om det men har inte kommit till skott', score: 3 },
+      { label: 'Ja, webbläsarens inbyggda', desc: 'Chrome, Safari, Firefox — funkar bra om kontot är skyddat', score: 7 },
+      { label: 'Ja, en dedikerad app', desc: 'Bitwarden, 1Password, KeePass, Proton Pass', score: 10 }
+    ]
+  },
+  {
+    cat: 'Phishing',
+    q: 'Klickar du på länkar i SMS från okända nummer?',
+    sub: 'PostNord, Skatteverket, banken — falska SMS är vanligaste sättet folk blir lurade idag.',
+    options: [
+      { label: 'Ja, om det ser viktigt ut', desc: 'Paketspårning, betalkrav, "ditt konto är låst"', score: 0 },
+      { label: 'Ibland, beror på avsändaren', desc: 'Försöker tänka efter men klickar ändå', score: 4 },
+      { label: 'Sällan, jag är skeptisk', desc: 'Kollar oftast genom att gå direkt till sajten', score: 8 },
+      { label: 'Aldrig — jag öppnar appen själv istället', desc: 'Ingen länk klickas innan jag verifierat', score: 10 }
+    ]
+  },
+  {
+    cat: 'Uppdateringar',
+    q: 'Hur ofta uppdaterar du operativsystem och appar?',
+    sub: 'De flesta hack använder gamla buggar som redan är fixade — om du bara installerat fixen.',
+    options: [
+      { label: 'Aldrig om jag slipper', desc: 'Skjuter upp tills något slutar funka', score: 0 },
+      { label: 'När det börjar tjata på mig', desc: 'Klickar "påminn senare" några gånger först', score: 4 },
+      { label: 'Inom någon vecka', desc: 'Brukar fixa det när jag har tid', score: 7 },
+      { label: 'Direkt eller automatiskt', desc: 'Auto-uppdateringar är på, eller jag installerar samma dag', score: 10 }
+    ]
+  },
+  {
+    cat: 'Publikt Wi-Fi',
+    q: 'Använder du publikt Wi-Fi (café, flygplats, skola) utan VPN?',
+    sub: 'Andra på samma nätverk kan ibland se vad du gör. Mindre farligt med HTTPS men inte riskfritt.',
+    options: [
+      { label: 'Ja, alltid om det finns', desc: 'Sparar mobildata utan att tänka på det', score: 2 },
+      { label: 'Ofta, för enkla saker', desc: 'Surfar och kollar sociala medier', score: 5 },
+      { label: 'Sällan, bara om jag måste', desc: 'Föredrar mobildata när det går', score: 8 },
+      { label: 'Aldrig, eller alltid med VPN', desc: 'Antingen mobildata eller en VPN-app igång', score: 10 }
+    ]
+  },
+  {
+    cat: 'Bilagor',
+    q: 'Öppnar du bilagor (PDF, Word, ZIP) från okända mejl?',
+    sub: 'Klassisk metod att smyga in virus. En CV-fil från en jobbsökare du inte känner kan vara malware.',
+    options: [
+      { label: 'Ja, om de ser legitima ut', desc: 'Faktura, CV, leveransbekräftelse', score: 0 },
+      { label: 'Ibland, beror på mejlet', desc: 'Försöker bedöma men ibland fel', score: 3 },
+      { label: 'Sällan, bara om jag väntar något', desc: 'Måste matcha en konversation jag är med i', score: 8 },
+      { label: 'Aldrig från okända', desc: 'Skickar de via WeTransfer eller Google Drive om de vill nå mig', score: 10 }
+    ]
+  },
+  {
+    cat: 'Läckta lösenord',
+    q: 'Har du bytt lösenord på sajter som varit med i kända dataintrång?',
+    sub: 'Adobe, LinkedIn, Dropbox, Snapchat — om du var med på 2010-talet är minst en av dina läckt.',
+    options: [
+      { label: 'Vet inte om mina lösenord läckt', desc: 'Har aldrig kollat (gör det på säkerkoll.se!)', score: 1 },
+      { label: 'Vet att vissa läckt men har inte bytt', desc: 'På min "to-do" länge', score: 2 },
+      { label: 'Bytt på de viktigaste', desc: 'Mejl och bank fixade, resten kvar', score: 7 },
+      { label: 'Bytt överallt där jag fått varning', desc: 'Använder HIBP/Säkerkoll och agerar direkt', score: 10 }
+    ]
+  },
+  {
+    cat: 'Sociala medier',
+    q: 'Hur mycket personlig info ligger öppet på dina profiler?',
+    sub: 'Födelsedatum, skola, jobb, vänner, plats — guld för någon som vill gissa lösenord eller lura dig.',
+    options: [
+      { label: 'Allt är öppet — vill nå folk', desc: 'Publika profiler, all info ifylld', score: 1 },
+      { label: 'Ganska öppet men inga adresser', desc: 'Profiler är offentliga men jag tänker lite', score: 4 },
+      { label: 'Vänner-bara på det mesta', desc: 'Privata profiler, accepterar bara folk jag känner', score: 8 },
+      { label: 'Minimalt — knappt nåt info ifyllt', desc: 'Privat, ingen födelsedag, falsk hometown', score: 10 }
+    ]
+  },
+  {
+    cat: 'Backup',
+    q: 'Har du backup på viktiga filer (foton, skoluppgifter)?',
+    sub: 'Ransomware krypterar din dator och kräver pengar. Bra backup gör hela hotet poänglöst.',
+    options: [
+      { label: 'Nej, allt ligger på datorn', desc: 'Om hårddisken dör är allt borta', score: 0 },
+      { label: 'Foton i molnet (iCloud/Google)', desc: 'Bilder är säkrade, resten är det inte', score: 5 },
+      { label: 'Det viktigaste på flera ställen', desc: 'Dropbox/Drive plus extern hårddisk ibland', score: 8 },
+      { label: 'Automatisk backup av allt', desc: 'iCloud/OneDrive/Backblaze körs i bakgrunden', score: 10 }
+    ]
+  }
+];
+
+// ============================================================
+// TIPS — kopplade till frågans index och svarets index
+// Visas bara om svaret är dåligt (score < 7 typ)
+// ============================================================
+const TIPS = {
+  0: { // Lösenord
+    title: 'Sluta återanvända lösenord',
+    body: 'Skaffa en lösenordshanterare som genererar unika lösenord åt dig. Du behöver bara komma ihåg ett enda master-lösenord.',
+    severity: 'high'
+  },
+  1: { // 2FA
+    title: 'Slå på tvåfaktor på din mejl idag',
+    body: 'Gå in på Google/Microsoft-kontot, sök efter "2-stegsverifiering" eller "2FA". Använd en app som Google Authenticator istället för SMS.',
+    severity: 'high'
+  },
+  2: { // Lösenordshanterare
+    title: 'Testa Bitwarden eller Proton Pass',
+    body: 'Båda är gratis och funkar på dator, mobil och i webbläsaren. Ta en helg, lägg in dina viktigaste konton först.',
+    severity: 'med'
+  },
+  3: { // Phishing SMS
+    title: 'Klicka aldrig länkar i SMS',
+    body: 'Få i taget du saknar paket — öppna PostNord-appen direkt. Ska du till banken — skriv adressen själv. En sekund extra räddar kontot.',
+    severity: 'high'
+  },
+  4: { // Uppdateringar
+    title: 'Slå på automatiska uppdateringar',
+    body: 'På Windows: Inställningar → Windows Update. På mobilen: App Store/Play Butik har en "uppdatera automatiskt"-toggle. Glöm bort det och låt det skötas själv.',
+    severity: 'med'
+  },
+  5: { // Wi-Fi
+    title: 'Skaffa en VPN för publikt Wi-Fi',
+    body: 'Proton VPN har en gratis-version som funkar bra. Slå på den när du är på café, skolan eller flygplatsen.',
+    severity: 'med'
+  },
+  6: { // Bilagor
+    title: 'Öppna inte bilagor från okända',
+    body: 'Om du verkligen behöver — skicka filen till virustotal.com först. Tar 10 sekunder och scannar med 70+ antivirus.',
+    severity: 'high'
+  },
+  7: { // Läckta lösenord
+    title: 'Kolla dina lösenord på säkerkoll.se',
+    body: 'Vår startsida säger direkt om ditt lösenord finns i någon kända läcka. Hittar du nåt — byt direkt och slå på 2FA på den sajten.',
+    severity: 'high'
+  },
+  8: { // Sociala medier
+    title: 'Privatisera dina profiler',
+    body: 'På Insta: Inställningar → Sekretess → Privat konto. Ta bort födelseår, skola, telefonnummer från bio. Det är gratis bonusinfo för stalkers och hackare.',
+    severity: 'low'
+  },
+  9: { // Backup
+    title: 'Slå på molnbackup',
+    body: 'iCloud, OneDrive eller Google Drive räcker långt. Eller köp en extern SSD och kör Windows backup en gång i månaden.',
+    severity: 'med'
+  }
+};
+
+// ============================================================
+// STATE & RENDER
+// ============================================================
+const state = {
+  current: 0,          // current question index
+  selected: 0,         // currently focused option
+  answers: [],         // chosen option index per question
+  scores: [],          // resulting scores per question
+};
+
+const $ = id => document.getElementById(id);
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $(id).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'instant' });
+}
+
+function buildProgress() {
+  const wrap = $('q-progress');
+  wrap.innerHTML = '';
+  for (let i = 0; i < QUESTIONS.length; i++) {
+    const t = document.createElement('div');
+    t.className = 'tick';
+    if (i < state.current) t.classList.add('done');
+    if (i === state.current) t.classList.add('current');
+    wrap.appendChild(t);
+  }
+}
+
+function pad(n) { return String(n).padStart(2, '0'); }
+
+function renderQuestion(animate = false) {
+  const q = QUESTIONS[state.current];
+  $('q-current').textContent = pad(state.current + 1);
+  $('q-total').textContent = pad(QUESTIONS.length);
+  $('q-cat').textContent = q.cat;
+  $('q-text').textContent = q.q;
+  $('q-sub').textContent = q.sub;
+  buildProgress();
+
+  const opts = $('options');
+  opts.innerHTML = '';
+  q.options.forEach((o, i) => {
+    const b = document.createElement('button');
+    b.className = 'opt';
+    if (i === state.selected) b.classList.add('focused');
+    b.dataset.idx = i;
+    b.innerHTML = `
+      <span class="marker">${i + 1}</span>
+      <span class="label-wrap">
+        <span class="label">${o.label}</span>
+        <span class="desc">${o.desc}</span>
+      </span>
+      <span class="ind">välj →</span>
+    `;
+    b.addEventListener('mouseenter', () => focusOption(i));
+    b.addEventListener('click', () => commitAnswer(i));
+    opts.appendChild(b);
+  });
+
+  $('back-btn').disabled = state.current === 0;
+
+  if (animate) {
+    const quiz = document.querySelector('.quiz');
+    quiz.classList.remove('entering');
+    void quiz.offsetWidth;
+    quiz.classList.add('entering');
+  }
+}
+
+function focusOption(i) {
+  state.selected = i;
+  document.querySelectorAll('.opt').forEach((el, idx) => {
+    el.classList.toggle('focused', idx === i);
+  });
+}
+
+function commitAnswer(i) {
+  const q = QUESTIONS[state.current];
+  state.answers[state.current] = i;
+  state.scores[state.current] = q.options[i].score;
+
+  if (state.current < QUESTIONS.length - 1) {
+    state.current++;
+    state.selected = state.answers[state.current] ?? 0;
+    renderQuestion(true);
+  } else {
+    showResult();
+  }
+}
+
+function goBack() {
+  if (state.current === 0) return;
+  state.current--;
+  state.selected = state.answers[state.current] ?? 0;
+  renderQuestion(true);
+}
+
+// ============================================================
+// RESULT
+// ============================================================
+function ratingLabel(score) {
+  if (score >= 85) return { rating: 'Stark — du är bättre skyddad än de flesta.', stamp: 'Skyddad', summary: 'Bra jobbat. Dina vanor håller koll på de vanligaste hoten. Här är några sista detaljer du kan polera.' };
+  if (score >= 65) return { rating: 'Solid grund — några viktiga luckor att täppa till.', stamp: 'På rätt väg', summary: 'Du gör mycket rätt redan. Fixar du sakerna nedan så är du klart över snittet.' };
+  if (score >= 40) return { rating: 'Sårbar — flera saker en angripare hade utnyttjat.', stamp: 'Borde fixas', summary: 'Det finns hål i ditt skydd som inte är svåra att täppa. Börja med det första tipset.' };
+  return { rating: 'Mycket sårbar — börja med tipsen ovan.', stamp: 'Hög risk', summary: 'Just nu skulle en hackare ha lätt att komma åt något. Goda nyheter: det går att fixa snabbt.' };
+}
+
+function showResult() {
+  const total = state.scores.reduce((a, b) => a + b, 0);
+  const r = ratingLabel(total);
+
+  $('r-stamp').textContent = r.stamp;
+  $('r-rating').textContent = r.rating;
+  $('r-summary').textContent = r.summary;
+
+  // animated score count
+  const scoreEl = $('r-score');
+  const barEl = $('r-bar');
+  let n = 0;
+  const target = total;
+  const step = Math.max(1, Math.round(target / 40));
+  const tick = () => {
+    n = Math.min(target, n + step);
+    scoreEl.textContent = n;
+    if (n < target) requestAnimationFrame(tick);
+  };
+
+  // Tips: collect questions where the user scored < 7
+  const tipsToShow = [];
+  state.scores.forEach((s, i) => {
+    if (s < 7 && TIPS[i]) tipsToShow.push({ ...TIPS[i], qIdx: i, scored: s });
+  });
+  // sort: high severity first
+  const sevOrder = { high: 0, med: 1, low: 2 };
+  tipsToShow.sort((a, b) => sevOrder[a.severity] - sevOrder[b.severity]);
+
+  const tipsWrap = $('tips');
+  tipsWrap.innerHTML = '';
+  $('tips-count').textContent = tipsToShow.length === 0
+    ? 'inga problem hittade'
+    : `${tipsToShow.length} ${tipsToShow.length === 1 ? 'tips' : 'tips'}`;
+
+  if (tipsToShow.length === 0) {
+    tipsWrap.innerHTML = `
+      <div class="tip">
+        <span class="num">∗</span>
+        <div class="body">
+          <h4>Inget akut att fixa</h4>
+          <p>Du har redan goda vanor. Fortsätt så och kolla in nyheter om säkerhet då och då — hot förändras hela tiden.</p>
+        </div>
+        <span class="severity low">Bra jobbat</span>
+      </div>
+    `;
+  } else {
+    tipsToShow.forEach((t, i) => {
+      const sev = t.severity === 'high' ? 'Hög' : t.severity === 'med' ? 'Medel' : 'Låg';
+      const el = document.createElement('div');
+      el.className = 'tip';
+      el.innerHTML = `
+        <span class="num">${pad(i + 1)}</span>
+        <div class="body">
+          <h4>${t.title}</h4>
+          <p>${t.body}</p>
+        </div>
+        <span class="severity ${t.severity}">${sev} prio</span>
+      `;
+      tipsWrap.appendChild(el);
+    });
+  }
+
+  showScreen('screen-result');
+  setTimeout(() => {
+    tick();
+    barEl.style.width = total + '%';
+    // colour the bar based on score
+    if (total >= 85) barEl.style.background = 'var(--safe)';
+    else if (total >= 65) barEl.style.background = 'var(--warn)';
+    else barEl.style.background = 'var(--accent)';
+  }, 200);
+}
+
+// ============================================================
+// KEYBOARD
+// ============================================================
+document.addEventListener('keydown', e => {
+  const intro = $('screen-intro').classList.contains('active');
+  const quiz = $('screen-quiz').classList.contains('active');
+  const modalOpen = $('modal-bg').classList.contains('open');
+
+  if (modalOpen && e.key === 'Escape') {
+    closeModal();
+    return;
+  }
+
+  if (intro && (e.key === 'Enter' || e.key === ' ')) {
+    e.preventDefault();
+    startQuiz();
+    return;
+  }
+
+  if (!quiz) return;
+
+  const optsCount = QUESTIONS[state.current].options.length;
+
+  if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+    e.preventDefault();
+    focusOption((state.selected + 1) % optsCount);
+  } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+    e.preventDefault();
+    focusOption((state.selected - 1 + optsCount) % optsCount);
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    commitAnswer(state.selected);
+  } else if (e.key === 'Backspace') {
+    e.preventDefault();
+    goBack();
+  } else if (/^[1-9]$/.test(e.key)) {
+    const num = parseInt(e.key, 10) - 1;
+    if (num < optsCount) {
+      focusOption(num);
+      setTimeout(() => commitAnswer(num), 120);
+    }
+  }
+});
+
+// ============================================================
+// FLOW
+// ============================================================
+function startQuiz() {
+  state.current = 0;
+  state.selected = 0;
+  state.answers = [];
+  state.scores = [];
+  renderQuestion(true);
+  showScreen('screen-quiz');
+}
+
+function restart() {
+  showScreen('screen-intro');
+}
+
+$('start-btn').addEventListener('click', startQuiz);
+$('back-btn').addEventListener('click', goBack);
+$('restart-btn').addEventListener('click', restart);
+
+// ============================================================
+// SHARE — render result onto canvas
+// ============================================================
+function drawShareCanvas() {
+  const c = $('share-canvas');
+  const ctx = c.getContext('2d');
+  const W = c.width, H = c.height;
+  const total = state.scores.reduce((a, b) => a + b, 0);
+  const r = ratingLabel(total);
+
+  // background
+  ctx.fillStyle = '#f4efe6';
+  ctx.fillRect(0, 0, W, H);
+
+  // grain (cheap version: scattered dots)
+  ctx.fillStyle = 'rgba(14, 42, 71, 0.04)';
+  for (let i = 0; i < 4000; i++) {
+    ctx.fillRect(Math.random() * W, Math.random() * H, 1, 1);
+  }
+
+  // top label
+  ctx.fillStyle = '#3d5570';
+  ctx.font = '500 22px "Geist Mono", monospace';
+  ctx.textAlign = 'left';
+  ctx.fillText('SÄKERKOLL.SE  /  SÄKERHETSPOÄNG', 80, 110);
+
+  // accent bar
+  ctx.fillStyle = '#c76a4a';
+  ctx.fillRect(80, 140, 60, 3);
+
+  // big serif title
+  ctx.fillStyle = '#0e2a47';
+  ctx.font = '400 80px "Fraunces", serif';
+  ctx.fillText('Min', 80, 270);
+  ctx.font = 'italic 400 80px "Fraunces", serif';
+  ctx.fillStyle = '#c76a4a';
+  ctx.fillText('säkerhetspoäng', 80, 360);
+
+  // huge score
+  ctx.fillStyle = '#0e2a47';
+  ctx.font = '400 360px "Fraunces", serif';
+  ctx.textAlign = 'left';
+  ctx.fillText(String(total), 80, 740);
+
+  // /100
+  const scoreWidth = ctx.measureText(String(total)).width;
+  ctx.font = 'italic 400 80px "Fraunces", serif';
+  ctx.fillStyle = '#6b7a8f';
+  ctx.fillText('/ 100', 80 + scoreWidth + 30, 740);
+
+  // bar
+  const barW = W - 160;
+  const barH = 12;
+  ctx.fillStyle = '#e5ddc9';
+  ctx.fillRect(80, 800, barW, barH);
+  let fillColor = '#c76a4a';
+  if (total >= 85) fillColor = '#4e7a5e';
+  else if (total >= 65) fillColor = '#b8935a';
+  ctx.fillStyle = fillColor;
+  ctx.fillRect(80, 800, barW * (total / 100), barH);
+
+  // rating text — wrap if long
+  ctx.fillStyle = '#0e2a47';
+  ctx.font = 'italic 400 36px "Fraunces", serif';
+  wrapText(ctx, r.rating, 80, 880, W - 160, 46);
+
+  // bottom row
+  ctx.fillStyle = '#3d5570';
+  ctx.font = '500 22px "Geist Mono", monospace';
+  ctx.fillText('GÖR QUIZET PÅ  →  SÄKERKOLL.SE/QUIZ', 80, H - 80);
+}
+
+function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+  const words = text.split(' ');
+  let line = '';
+  let yy = y;
+  for (const w of words) {
+    const test = line + w + ' ';
+    if (ctx.measureText(test).width > maxWidth && line) {
+      ctx.fillText(line.trim(), x, yy);
+      line = w + ' ';
+      yy += lineHeight;
+    } else {
+      line = test;
+    }
+  }
+  ctx.fillText(line.trim(), x, yy);
+}
+
+function openShare() {
+  $('modal-bg').classList.add('open');
+  // wait for fonts to be ready
+  document.fonts.ready.then(drawShareCanvas);
+}
+function closeModal() {
+  $('modal-bg').classList.remove('open');
+}
+
+$('share-btn').addEventListener('click', openShare);
+$('modal-close').addEventListener('click', closeModal);
+$('modal-bg').addEventListener('click', e => {
+  if (e.target === $('modal-bg')) closeModal();
+});
+
+$('download-btn').addEventListener('click', () => {
+  const total = state.scores.reduce((a, b) => a + b, 0);
+  const link = document.createElement('a');
+  link.download = `sakerkoll-${total}.png`;
+  link.href = $('share-canvas').toDataURL('image/png');
+  link.click();
+});
+
+$('copy-btn').addEventListener('click', () => {
+  navigator.clipboard.writeText('https://säkerkoll.se/quiz/').then(() => {
+    const b = $('copy-btn');
+    const orig = b.textContent;
+    b.textContent = 'kopierad ✓';
+    setTimeout(() => b.textContent = orig, 1600);
+  });
+});
+</script>
+
+<script defer src="/_vercel/insights/script.js"></script>
+<script defer src="/_vercel/speed-insights/script.js"></script>
+</body>
+</html>

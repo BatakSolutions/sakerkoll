@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lösenordsgenerator — Säkerkoll</title>
+<meta name="description" content="Generera starka lösenord eller svenska passphrases. Slumpat i din webbläsare — aldrig skickat någonstans.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #f4efe6;
+  --bg-alt: #ebe4d4;
+  --bg-deep: #e5ddc9;
+  --ink: #0e2a47;
+  --ink-soft: #3d5570;
+  --ink-mute: #6b7a8f;
+  --ink-faint: #a8b0bc;
+  --line: rgba(14, 42, 71, 0.12);
+  --line-strong: rgba(14, 42, 71, 0.25);
+  --paper: #faf6ed;
+  --accent: #c76a4a;
+  --accent-deep: #a85336;
+  --safe: #4e7a5e;
+  --safe-deep: #36583f;
+  --warn: #b8935a;
+  --serif: 'Fraunces', 'Times New Roman', serif;
+  --sans: 'Geist', -apple-system, sans-serif;
+  --mono: 'Geist Mono', 'Courier New', monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  position: relative;
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.35;
+  z-index: 100;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.055 0 0 0 0 0.165 0 0 0 0 0.28 0 0 0 0.15 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  mix-blend-mode: multiply;
+}
+h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: -0.01em; }
+h1 { font-variation-settings: 'opsz' 144; }
+a { color: inherit; }
+.mono { font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.06em; color: var(--ink-soft); }
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.eyebrow::before { content: ''; width: 28px; height: 1px; background: var(--ink-soft); }
+.container { max-width: 1100px; margin: 0 auto; padding: 0 40px; position: relative; z-index: 1; }
+
+nav.top {
+  position: sticky; top: 0; z-index: 50;
+  backdrop-filter: blur(12px) saturate(1.1);
+  -webkit-backdrop-filter: blur(12px) saturate(1.1);
+  background: rgba(244, 239, 230, 0.78);
+  border-bottom: 1px solid var(--line);
+}
+.nav-inner {
+  max-width: 1200px; margin: 0 auto;
+  padding: 18px 40px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.logo {
+  font-family: var(--serif);
+  font-size: 1.3rem;
+  font-weight: 500;
+  display: flex; align-items: center; gap: 10px;
+  text-decoration: none;
+}
+.logo-mark {
+  width: 22px; height: 22px;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+  position: relative;
+}
+.logo-mark::after { content: ''; position: absolute; inset: 4px; background: var(--ink); border-radius: 50%; }
+.nav-links { display: flex; gap: 28px; align-items: center; }
+.nav-links a {
+  text-decoration: none;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--ink); }
+.nav-links a.active { color: var(--ink); font-weight: 500; }
+
+.nav-toggle {
+  display: none;
+  background: transparent;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  margin: -10px;
+}
+.nav-toggle span {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: var(--ink);
+  margin: 5px 0;
+  transition: transform 0.3s, opacity 0.3s;
+  border-radius: 1px;
+}
+.nav-toggle.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.nav-toggle.open span:nth-child(2) { opacity: 0; }
+.nav-toggle.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+.hero { padding: 80px 0 30px; }
+.hero-eyebrow-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 36px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+.hero h1 {
+  font-size: clamp(2.8rem, 7vw, 5.4rem);
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+  max-width: 16ch;
+}
+.hero h1 em { font-style: italic; font-weight: 400; color: var(--accent); }
+.hero-sub {
+  max-width: 56ch;
+  margin-top: 28px;
+  font-size: 1.08rem;
+  color: var(--ink-soft);
+}
+
+/* tabs */
+.tabs {
+  display: flex;
+  margin: 48px 0 0;
+  border-bottom: 1px solid var(--line-strong);
+  gap: 0;
+}
+.tab {
+  padding: 16px 28px;
+  font-family: var(--sans);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--ink-mute);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+  margin-bottom: -1px;
+  letter-spacing: -0.005em;
+}
+.tab:hover { color: var(--ink); }
+.tab.active {
+  color: var(--ink);
+  border-bottom-color: var(--accent);
+}
+
+/* controls panel */
+.panel {
+  background: var(--paper);
+  border: 1px solid var(--line-strong);
+  border-top: none;
+  padding: 36px 40px;
+  border-radius: 0 0 4px 4px;
+}
+.panel-row {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 24px;
+  padding: 14px 0;
+  border-bottom: 1px dashed var(--line);
+  align-items: center;
+}
+.panel-row:last-of-type { border-bottom: none; }
+.panel-label {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+.panel-control { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.panel-control input[type="range"] {
+  -webkit-appearance: none;
+  flex: 1;
+  max-width: 300px;
+  height: 3px;
+  background: var(--line-strong);
+  border-radius: 2px;
+  outline: none;
+}
+.panel-control input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px; height: 18px;
+  background: var(--ink);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.panel-control input[type="range"]::-moz-range-thumb {
+  width: 18px; height: 18px;
+  background: var(--ink);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.panel-control input[type="range"]:hover::-webkit-slider-thumb { background: var(--accent); }
+.panel-control .num-display {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.3rem;
+  color: var(--ink);
+  min-width: 64px;
+  font-variation-settings: 'opsz' 72;
+}
+
+.checkbox-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 0.92rem;
+  padding: 6px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 2px;
+  transition: background 0.2s, border-color 0.2s;
+  background: var(--bg);
+  user-select: none;
+}
+.checkbox-wrap:hover { background: var(--bg-alt); }
+.checkbox-wrap input { margin: 0; accent-color: var(--ink); cursor: pointer; }
+.checkbox-wrap.checked {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+
+.separator-choice {
+  display: inline-flex;
+  gap: 6px;
+}
+.sep-btn {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--line-strong);
+  background: var(--bg);
+  border-radius: 2px;
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+  color: var(--ink-soft);
+}
+.sep-btn:hover { background: var(--bg-alt); color: var(--ink); }
+.sep-btn.active {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+
+/* generate button */
+.generate-row {
+  margin-top: 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+.btn {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 13px 32px;
+  border: none;
+  border-radius: 2px;
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+.btn:hover { background: var(--accent-deep); }
+.btn:active { transform: scale(0.98); }
+.btn.secondary {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--line-strong);
+}
+.btn.secondary:hover { background: var(--bg-alt); }
+
+.generate-note {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: var(--ink-mute);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.generate-note::before { content: '⟶'; color: var(--ink-faint); }
+
+/* results */
+.results {
+  margin-top: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.pw-card {
+  background: var(--paper);
+  border: 1px solid var(--line-strong);
+  padding: 24px 28px;
+  border-radius: 4px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 20px;
+  align-items: center;
+  transition: border-color 0.3s, box-shadow 0.3s;
+  animation: card-in 0.4s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+.pw-card:hover { border-color: var(--ink); box-shadow: 0 8px 24px -18px rgba(14, 42, 71, 0.35); }
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.pw-card-main { min-width: 0; }
+.pw-value {
+  font-family: var(--mono);
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: var(--ink);
+  word-break: break-all;
+  line-height: 1.3;
+  letter-spacing: 0;
+}
+.pw-meta {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.pw-strength-bar {
+  height: 3px;
+  width: 160px;
+  background: var(--line);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+.pw-strength-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.4s, background 0.4s;
+}
+.pw-strength-fill.s1 { background: #c76a4a; width: 20%; }
+.pw-strength-fill.s2 { background: #d18a4d; width: 40%; }
+.pw-strength-fill.s3 { background: #b8935a; width: 60%; }
+.pw-strength-fill.s4 { background: #7a8a5c; width: 80%; }
+.pw-strength-fill.s5 { background: #4e7a5e; width: 100%; }
+.pw-strength-label {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 0.98rem;
+  color: var(--ink);
+}
+.pw-time {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--ink-mute);
+  letter-spacing: 0.04em;
+}
+
+.pw-copy {
+  background: transparent;
+  border: 1px solid var(--line-strong);
+  color: var(--ink);
+  padding: 10px 18px;
+  border-radius: 2px;
+  font-family: var(--sans);
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.pw-copy:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.pw-copy.copied {
+  background: var(--safe);
+  color: var(--paper);
+  border-color: var(--safe);
+}
+.pw-copy svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+/* empty state */
+.empty {
+  padding: 60px 32px;
+  text-align: center;
+  color: var(--ink-mute);
+  border: 1px dashed var(--line-strong);
+  border-radius: 4px;
+  background: var(--bg-alt);
+}
+.empty p { font-family: var(--serif); font-style: italic; font-size: 1.1rem; }
+
+/* explanation */
+.explain {
+  margin-top: 100px;
+  padding: 80px 0;
+  border-top: 1px solid var(--line);
+  background: var(--bg-alt);
+}
+.explain h2 {
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  margin-bottom: 40px;
+  max-width: 24ch;
+  letter-spacing: -0.025em;
+}
+.explain h2 em { font-style: italic; color: var(--accent); }
+.explain-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 32px;
+}
+.explain-item {
+  padding: 24px 0;
+  border-top: 2px solid var(--ink);
+}
+.explain-item .num {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--ink-mute);
+  letter-spacing: 0.12em;
+  margin-bottom: 10px;
+}
+.explain-item h3 {
+  font-size: 1.2rem;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+.explain-item p {
+  font-size: 0.92rem;
+  color: var(--ink-soft);
+  line-height: 1.55;
+}
+
+footer {
+  padding: 60px 0 40px;
+  border-top: 1px solid var(--line);
+  background: var(--bg-deep);
+}
+.footer-inner {
+  max-width: 1200px; margin: 0 auto;
+  padding: 0 40px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 40px;
+  align-items: start;
+}
+.footer-left p {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.05rem;
+  color: var(--ink-soft);
+  max-width: 42ch;
+}
+.footer-meta {
+  margin-top: 24px;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--ink-mute);
+  letter-spacing: 0.08em;
+}
+.footer-right {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: right;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+}
+.footer-right a { text-decoration: none; transition: color 0.2s; }
+.footer-right a:hover { color: var(--accent); }
+
+::selection { background: var(--ink); color: var(--paper); }
+
+@media (max-width: 780px) {
+  .container, .nav-inner, .footer-inner { padding-left: 20px; padding-right: 20px; }
+  .hero { padding: 50px 0 20px; }
+  .hero h1 { font-size: clamp(2.2rem, 10vw, 3.6rem); }
+  .hero-sub { font-size: 1rem; margin-top: 24px; }
+  .panel { padding: 22px 18px; }
+  .panel-row { grid-template-columns: 1fr; gap: 10px; padding: 16px 0; }
+  .panel-control { width: 100%; gap: 10px; }
+  .panel-control input[type="range"] { max-width: 100%; }
+  .pw-card { grid-template-columns: 1fr; gap: 14px; padding: 20px 18px; }
+  .pw-value { font-size: 1.05rem; }
+  .pw-copy { width: 100%; justify-content: center; }
+  .footer-inner { grid-template-columns: 1fr; }
+  .footer-right { text-align: left; }
+  .tab { padding: 14px 16px; font-size: 0.9rem; flex: 1; }
+  .tabs { overflow-x: auto; }
+  .btn { width: 100%; }
+  .generate-row { flex-direction: column; align-items: stretch; gap: 10px; }
+  .generate-note { justify-content: center; }
+  .logo { font-size: 1.15rem; }
+  .nav-inner { padding: 14px 20px; }
+  .explain { margin-top: 60px; padding: 60px 0; }
+  .checkbox-wrap { font-size: 0.88rem; padding: 6px 10px; }
+
+  /* Hamburger nav */
+  .nav-toggle { display: block; z-index: 60; }
+  .nav-links {
+    position: fixed;
+    top: 54px;
+    left: 0; right: 0;
+    background: rgba(244, 239, 230, 0.98);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--line);
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 12px 20px 24px;
+    transform: translateY(-12px);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.25s cubic-bezier(0.2, 0.7, 0.3, 1), opacity 0.22s;
+  }
+  .nav-links.open {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .nav-links a {
+    font-size: 1.15rem;
+    padding: 14px 4px;
+    border-bottom: 1px solid var(--line);
+    font-family: var(--serif);
+    color: var(--ink);
+  }
+  .nav-links a:last-child { border-bottom: none; }
+}
+</style>
+</head>
+<body>
+
+<nav class="top">
+  <div class="nav-inner">
+    <a href="/" class="logo">
+      <span class="logo-mark"></span>
+      <span>Säkerkoll</span>
+    </a>
+    <button class="nav-toggle" id="nav-toggle" aria-label="Meny" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="nav-links" id="nav-links">
+      <a href="/">Start</a>
+      <a href="/#kolla">Lösenord</a>
+      <a href="/#bot">Botkampen</a>
+      <a href="/generator" class="active">Generator</a>
+      <a href="/url-koll">URL-koll</a>
+      <a href="/quiz">Säkerhetsquiz</a>
+      <a href="/#intrang">Intrång</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="container">
+    <div class="hero-eyebrow-row">
+      <span class="eyebrow">lösenordsgenerator</span>
+      <span class="mono">v.1.0</span>
+    </div>
+    <h1>Låt oss skapa ett <em>riktigt</em> lösenord.</h1>
+    <p class="hero-sub">Välj mellan slumpmässiga tecken eller en svensk ordfras. Allt slumpas i din webbläsare med <span class="mono" style="font-size:0.88rem">crypto.getRandomValues()</span> — inget genereras på server, inget sparas, inget skickas någonstans.</p>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="random">Slumpmässigt</button>
+      <button class="tab" data-tab="passphrase">Passphrase (svenska ord)</button>
+    </div>
+
+    <!-- RANDOM PANEL -->
+    <div class="panel" id="panel-random">
+      <div class="panel-row">
+        <div class="panel-label">Längd</div>
+        <div class="panel-control">
+          <input type="range" id="rand-length" min="8" max="48" value="20">
+          <span class="num-display" id="rand-length-val">20</span>
+        </div>
+      </div>
+      <div class="panel-row">
+        <div class="panel-label">Tecken</div>
+        <div class="panel-control">
+          <label class="checkbox-wrap checked" data-flag="upper"><input type="checkbox" id="rand-upper" checked> Stora</label>
+          <label class="checkbox-wrap checked" data-flag="lower"><input type="checkbox" id="rand-lower" checked> Små</label>
+          <label class="checkbox-wrap checked" data-flag="digits"><input type="checkbox" id="rand-digits" checked> Siffror</label>
+          <label class="checkbox-wrap checked" data-flag="symbols"><input type="checkbox" id="rand-symbols" checked> Specialtecken</label>
+        </div>
+      </div>
+      <div class="panel-row">
+        <div class="panel-label">Smart läge</div>
+        <div class="panel-control">
+          <label class="checkbox-wrap" data-flag="excludeSimilar"><input type="checkbox" id="rand-exclude-similar"> Exkludera liknande (0 O 1 l I)</label>
+        </div>
+      </div>
+      <div class="generate-row">
+        <button class="btn" id="btn-gen-random">Generera 5 nya</button>
+        <span class="generate-note">kopiera med ett klick · inget sparas</span>
+      </div>
+    </div>
+
+    <!-- PASSPHRASE PANEL -->
+    <div class="panel" id="panel-passphrase" style="display:none">
+      <div class="panel-row">
+        <div class="panel-label">Antal ord</div>
+        <div class="panel-control">
+          <input type="range" id="pp-words" min="3" max="8" value="4">
+          <span class="num-display" id="pp-words-val">4</span>
+        </div>
+      </div>
+      <div class="panel-row">
+        <div class="panel-label">Separator</div>
+        <div class="panel-control">
+          <div class="separator-choice" id="pp-separator">
+            <button class="sep-btn active" data-sep="-">-</button>
+            <button class="sep-btn" data-sep="_">_</button>
+            <button class="sep-btn" data-sep=".">.</button>
+            <button class="sep-btn" data-sep=" ">␣</button>
+            <button class="sep-btn" data-sep="">×</button>
+          </div>
+        </div>
+      </div>
+      <div class="panel-row">
+        <div class="panel-label">Tillägg</div>
+        <div class="panel-control">
+          <label class="checkbox-wrap" data-flag="capitalize"><input type="checkbox" id="pp-capitalize"> Stor bokstav</label>
+          <label class="checkbox-wrap" data-flag="addNumber"><input type="checkbox" id="pp-number"> Lägg till siffra</label>
+          <label class="checkbox-wrap" data-flag="addSymbol"><input type="checkbox" id="pp-symbol"> Lägg till specialtecken</label>
+        </div>
+      </div>
+      <div class="generate-row">
+        <button class="btn" id="btn-gen-passphrase">Generera 5 nya</button>
+        <span class="generate-note">svenska ord · enkla att minnas, svåra att knäcka</span>
+      </div>
+    </div>
+
+    <div class="results" id="results">
+      <div class="empty"><p>Klicka <em>generera</em> för att skapa fem förslag.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="explain">
+  <div class="container">
+    <h2>Varför ska du <em>lita</em> på dessa?</h2>
+    <div class="explain-grid">
+      <div class="explain-item">
+        <div class="num">01 · KRYPTO</div>
+        <h3>Äkta slump</h3>
+        <p>Vi använder <span class="mono" style="font-size:0.85rem">crypto.getRandomValues()</span> — samma slump-API som webbläsaren använder för SSL-handskakningar. Inte <span class="mono" style="font-size:0.85rem">Math.random()</span>.</p>
+      </div>
+      <div class="explain-item">
+        <div class="num">02 · LOKALT</div>
+        <h3>Allt i din webbläsare</h3>
+        <p>Inget nätverksanrop görs för att generera lösenordet. Du kan stänga internet och det fungerar. Sidans server ser aldrig vad du får.</p>
+      </div>
+      <div class="explain-item">
+        <div class="num">03 · LÄNGD</div>
+        <h3>Längd slår komplexitet</h3>
+        <p>Ett 20-tecken random lösenord har ~130 bitar entropi. En 4-ords svensk passphrase (från ~400 ord) har ~35 bitar. Båda duger — längre är bättre.</p>
+      </div>
+      <div class="explain-item">
+        <div class="num">04 · MEMORABEL</div>
+        <h3>Passphrase för minne</h3>
+        <p>Svenska ordfraser är lättare att komma ihåg än slumpmässiga tecken. Men om du använder lösenordshanterare spelar det mindre roll — ta då det slumpmässiga.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-left">
+      <p>Generera, kopiera, glöm. Spara i en lösenordshanterare om du vill ha tillgång senare.</p>
+      <div class="footer-meta">SÄKERKOLL · GENERATOR · BYGGD AV CETTO</div>
+    </div>
+    <div class="footer-right">
+      <a href="/">← Tillbaka</a>
+      <a href="/url-koll">URL-koll ↗</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Mobile nav toggle
+(function() {
+  const toggle = document.getElementById('nav-toggle');
+  const links = document.getElementById('nav-links');
+  if (!toggle || !links) return;
+  toggle.addEventListener('click', () => {
+    const open = toggle.classList.toggle('open');
+    links.classList.toggle('open', open);
+    toggle.setAttribute('aria-expanded', open);
+  });
+  links.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', () => {
+      toggle.classList.remove('open');
+      links.classList.remove('open');
+      toggle.setAttribute('aria-expanded', 'false');
+    });
+  });
+})();
+
+// ========================================================================
+// Swedish word list for passphrase generator
+// ========================================================================
+const SWEDISH_WORDS = [
+  // mat & dryck
+  'kaffe','bulle','ost','smör','bröd','sylt','ägg','fisk','kött','pasta',
+  'sallad','soppa','kaka','glass','choklad','socker','kanel','peppar','salt','vatten',
+  'mjölk','juice','vin','saft','te','öl','honung','ris','potatis','tomat',
+  'gurka','lök','morot','äpple','päron','banan','apelsin','jordgubbe','blåbär','hallon',
+  'räkmacka','pytt','falukorv','köttbullar','lussekatt','pepparkaka','knäcke','lingon','glögg','fika',
+  // djur
+  'hund','katt','häst','fågel','björn','räv','varg','älg','mus','orm',
+  'fjäril','spindel','ekorre','igelkott','val','delfin','kanin','sköldpadda','groda','fiskmås',
+  'lejon','tiger','elefant','apa','giraff','zebra','panda','koala','krokodil','papegoja',
+  // natur
+  'skog','sjö','berg','fjäll','hav','strand','träd','blomma','gräs','sand',
+  'sten','klippa','moln','stjärna','planet','måne','sol','jord','eld','snö',
+  'regn','vind','storm','dimma','frost','blixt','åska','is','dagg','fors',
+  // hem
+  'hus','stuga','rum','dörr','fönster','bord','stol','säng','soffa','matta',
+  'lampa','spis','kyl','dusch','kök','sovrum','trappa','källare','vind','balkong',
+  // färger
+  'röd','blå','grön','gul','vit','svart','grå','brun','rosa','lila',
+  'orange','guld','silver','ljus','mörk',
+  // tid
+  'dag','natt','år','månad','vecka','timme','morgon','kväll','middag','sommar',
+  'vinter','vår','höst','jul','påsk','midsommar','lucia','valborg','nyår','semester',
+  // familj & känslor
+  'mamma','pappa','syster','bror','farmor','morfar','älskling','hjärta','lycka','kram',
+  'puss','dröm','minne','glädje','sorg','lugn','ro','hopp','mod','tro',
+  // kläder
+  'tröja','byxor','skor','jacka','mössa','halsduk','handske','strumpa','klänning','kostym',
+  // saker
+  'bok','penna','dator','telefon','klocka','nyckel','plånbok','väska','ryggsäck','cykel',
+  'bil','buss','tåg','båt','flygplan','paraply','kamera','gitarr','piano','violin',
+  // verb (infinitiv)
+  'springa','hoppa','simma','dansa','sjunga','spela','läsa','skriva','rita','måla',
+  'laga','baka','gå','cykla','åka','flyga','sova','drömma','skratta','gråta',
+  // fantasi & sport
+  'viking','riddare','kung','drottning','prins','prinsessa','troll','häxa','drake','alv',
+  'fotboll','hockey','innebandy','handboll','tennis','boxning','karate','skidor','simning','yoga',
+  // abstrakta
+  'himmel','avgrund','ljus','mörker','tystnad','eko','skugga','dröm','tid','rum',
+  'frihet','rättvisa','sanning','kärlek','fred','krig','styrka','lugn','mod','vänskap',
+  // platser (svenska)
+  'stockholm','göteborg','malmö','uppsala','lund','visby','kiruna','luleå','kalmar','falun',
+  // mer vardag
+  'skola','jobb','rast','möte','semester','ferie','helg','lördag','söndag','fredag',
+  'måndag','tisdag','onsdag','torsdag','frukost','lunch','kvällsmat','snack','prat','brev'
+];
+
+// ========================================================================
+// Secure random helpers (crypto.getRandomValues)
+// ========================================================================
+function randomInt(max) {
+  // returns 0..max-1 with uniform distribution
+  const arr = new Uint32Array(1);
+  const range = Math.floor(0xFFFFFFFF / max) * max;
+  let x;
+  do {
+    crypto.getRandomValues(arr);
+    x = arr[0];
+  } while (x >= range);
+  return x % max;
+}
+
+function pickRandom(arr) {
+  return arr[randomInt(arr.length)];
+}
+
+// ========================================================================
+// Random password generator
+// ========================================================================
+const SIMILAR = new Set(['0','O','o','1','l','I','|']);
+
+function buildPool(flags) {
+  let pool = '';
+  if (flags.upper) pool += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  if (flags.lower) pool += 'abcdefghijklmnopqrstuvwxyz';
+  if (flags.digits) pool += '0123456789';
+  if (flags.symbols) pool += '!@#$%^&*-_+=?/.,;:';
+  if (flags.excludeSimilar) {
+    pool = [...pool].filter(c => !SIMILAR.has(c)).join('');
+  }
+  return pool;
+}
+
+function generateRandom(length, flags) {
+  const pool = buildPool(flags);
+  if (!pool) return '';
+  // ensure at least one of each selected type
+  const out = [];
+  const ensure = [];
+  if (flags.upper) ensure.push('ABCDEFGHIJKLMNOPQRSTUVWXYZ');
+  if (flags.lower) ensure.push('abcdefghijklmnopqrstuvwxyz');
+  if (flags.digits) ensure.push('0123456789');
+  if (flags.symbols) ensure.push('!@#$%^&*-_+=?/.,;:');
+  for (const charset of ensure) {
+    const filtered = flags.excludeSimilar ? [...charset].filter(c => !SIMILAR.has(c)).join('') : charset;
+    if (filtered) out.push(pickRandom(filtered));
+  }
+  while (out.length < length) out.push(pickRandom(pool));
+  // fisher-yates shuffle
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = randomInt(i + 1);
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out.slice(0, length).join('');
+}
+
+// ========================================================================
+// Passphrase generator
+// ========================================================================
+function generatePassphrase(words, sep, opts) {
+  const parts = [];
+  for (let i = 0; i < words; i++) {
+    let w = pickRandom(SWEDISH_WORDS);
+    if (opts.capitalize) w = w[0].toUpperCase() + w.slice(1);
+    parts.push(w);
+  }
+  let pw = parts.join(sep);
+  if (opts.addNumber) pw += randomInt(90) + 10;
+  if (opts.addSymbol) pw += pickRandom('!?.@#');
+  return pw;
+}
+
+// ========================================================================
+// Strength estimator — same logic as main site, simplified
+// ========================================================================
+function estimateStrength(pw, fromPassphrase = false) {
+  if (!pw) return { score: 0, label: '—', time: '—' };
+
+  let pool = 0;
+  if (/[a-z]/.test(pw)) pool += 26;
+  if (/[A-ZÅÄÖ]/.test(pw)) pool += 26;
+  if (/[åäö]/.test(pw)) pool += 6;
+  if (/\d/.test(pw)) pool += 10;
+  if (/[^a-zA-Z0-9åäöÅÄÖ]/.test(pw)) pool += 32;
+  if (pool === 0) pool = 26;
+
+  let entropy;
+  if (fromPassphrase) {
+    // approximate: log2(word count) per word, plus extras
+    const words = pw.split(/[^a-zA-ZåäöÅÄÖ]+/).filter(Boolean);
+    entropy = words.length * Math.log2(SWEDISH_WORDS.length);
+    // add bonus for extras (numbers, symbols)
+    if (/\d/.test(pw)) entropy += 6;
+    if (/[^a-zA-Z0-9åäöÅÄÖ]/.test(pw)) entropy += 5;
+  } else {
+    entropy = pw.length * Math.log2(pool);
+  }
+
+  const guesses = Math.pow(2, entropy) / 2;
+  const seconds = guesses / 1e10;
+
+  let score, label;
+  if (seconds < 60) { score = 1; label = 'Mycket svagt'; }
+  else if (seconds < 86400) { score = 2; label = 'Svagt'; }
+  else if (seconds < 31536000) { score = 3; label = 'Medel'; }
+  else if (seconds < 31536000 * 100) { score = 4; label = 'Starkt'; }
+  else { score = 5; label = 'Mycket starkt'; }
+
+  return { score, label, time: formatTime(seconds) };
+}
+
+function formatTime(s) {
+  if (s < 1) return 'knäcks direkt';
+  if (s < 60) return `≈ ${Math.round(s)} sek`;
+  if (s < 3600) return `≈ ${Math.round(s/60)} min`;
+  if (s < 86400) return `≈ ${Math.round(s/3600)} tim`;
+  if (s < 2592000) return `≈ ${Math.round(s/86400)} dagar`;
+  if (s < 31536000) return `≈ ${Math.round(s/2592000)} mån`;
+  if (s < 31536000 * 100) return `≈ ${Math.round(s/31536000)} år`;
+  if (s < 31536000 * 1e6) return `≈ ${Math.round(s/31536000/1000)} tusen år`;
+  if (s < 31536000 * 1e9) return `≈ ${Math.round(s/31536000/1e6)} milj. år`;
+  if (s < 31536000 * 1e12) return `≈ ${Math.round(s/31536000/1e9)} miljarder år`;
+  return `≈ tusentals miljarder år`;
+}
+
+// ========================================================================
+// UI
+// ========================================================================
+const tabs = document.querySelectorAll('.tab');
+const panelRandom = document.getElementById('panel-random');
+const panelPassphrase = document.getElementById('panel-passphrase');
+const resultsEl = document.getElementById('results');
+
+tabs.forEach(t => t.addEventListener('click', () => {
+  tabs.forEach(x => x.classList.toggle('active', x === t));
+  const tab = t.dataset.tab;
+  panelRandom.style.display = tab === 'random' ? '' : 'none';
+  panelPassphrase.style.display = tab === 'passphrase' ? '' : 'none';
+  resultsEl.innerHTML = '<div class="empty"><p>Klicka <em>generera</em> för att skapa fem förslag.</p></div>';
+}));
+
+// checkbox-wrap visual state sync
+document.querySelectorAll('.checkbox-wrap').forEach(wrap => {
+  const input = wrap.querySelector('input');
+  input.addEventListener('change', () => {
+    wrap.classList.toggle('checked', input.checked);
+  });
+});
+
+// range sliders
+const randLen = document.getElementById('rand-length');
+const randLenVal = document.getElementById('rand-length-val');
+randLen.addEventListener('input', () => randLenVal.textContent = randLen.value);
+
+const ppWords = document.getElementById('pp-words');
+const ppWordsVal = document.getElementById('pp-words-val');
+ppWords.addEventListener('input', () => ppWordsVal.textContent = ppWords.value);
+
+// separator
+let currentSep = '-';
+document.querySelectorAll('.sep-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.sep-btn').forEach(x => x.classList.toggle('active', x === btn));
+    currentSep = btn.dataset.sep;
+  });
+});
+
+// generate buttons
+document.getElementById('btn-gen-random').addEventListener('click', () => {
+  const length = parseInt(randLen.value, 10);
+  const flags = {
+    upper: document.getElementById('rand-upper').checked,
+    lower: document.getElementById('rand-lower').checked,
+    digits: document.getElementById('rand-digits').checked,
+    symbols: document.getElementById('rand-symbols').checked,
+    excludeSimilar: document.getElementById('rand-exclude-similar').checked,
+  };
+  if (!flags.upper && !flags.lower && !flags.digits && !flags.symbols) {
+    resultsEl.innerHTML = '<div class="empty"><p>Välj minst en typ av tecken.</p></div>';
+    return;
+  }
+  const passwords = Array.from({ length: 5 }, () => generateRandom(length, flags));
+  renderResults(passwords, false);
+});
+
+document.getElementById('btn-gen-passphrase').addEventListener('click', () => {
+  const words = parseInt(ppWords.value, 10);
+  const opts = {
+    capitalize: document.getElementById('pp-capitalize').checked,
+    addNumber: document.getElementById('pp-number').checked,
+    addSymbol: document.getElementById('pp-symbol').checked,
+  };
+  const passwords = Array.from({ length: 5 }, () => generatePassphrase(words, currentSep, opts));
+  renderResults(passwords, true);
+});
+
+function renderResults(passwords, fromPassphrase) {
+  resultsEl.innerHTML = '';
+  passwords.forEach((pw, i) => {
+    const { score, label, time } = estimateStrength(pw, fromPassphrase);
+    const card = document.createElement('div');
+    card.className = 'pw-card';
+    card.style.animationDelay = (i * 60) + 'ms';
+    card.innerHTML = `
+      <div class="pw-card-main">
+        <div class="pw-value">${escapeHtml(pw)}</div>
+        <div class="pw-meta">
+          <div class="pw-strength-bar"><div class="pw-strength-fill s${score}"></div></div>
+          <span class="pw-strength-label">${label}</span>
+          <span class="pw-time">${escapeHtml(time)}</span>
+        </div>
+      </div>
+      <button class="pw-copy" data-pw="${escapeHtml(pw)}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Kopiera
+      </button>
+    `;
+    resultsEl.appendChild(card);
+  });
+  resultsEl.querySelectorAll('.pw-copy').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const pw = btn.dataset.pw;
+      try {
+        await navigator.clipboard.writeText(pw);
+        btn.classList.add('copied');
+        btn.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          Kopierat!
+        `;
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          btn.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Kopiera
+          `;
+        }, 1800);
+      } catch {
+        btn.textContent = 'kunde inte kopiera';
+      }
+    });
+  });
+}
+
+function escapeHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+</script>
+<script defer src="/_vercel/insights/script.js"></script>
+<script defer src="/_vercel/speed-insights/script.js"></script>
+</body>
+</html>

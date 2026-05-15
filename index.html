@@ -1,0 +1,2142 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Säkerkoll — har ditt lösenord läckt?</title>
+<meta name="description" content="Kolla om ditt lösenord finns i kända dataintrång. Gratis, anonymt, och lösenordet lämnar aldrig din dator.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #f4efe6;
+  --bg-alt: #ebe4d4;
+  --bg-deep: #e5ddc9;
+  --ink: #0e2a47;
+  --ink-soft: #3d5570;
+  --ink-mute: #6b7a8f;
+  --ink-faint: #a8b0bc;
+  --line: rgba(14, 42, 71, 0.12);
+  --line-strong: rgba(14, 42, 71, 0.25);
+  --paper: #faf6ed;
+  --accent: #c76a4a;
+  --accent-deep: #a85336;
+  --safe: #4e7a5e;
+  --safe-deep: #36583f;
+  --warn: #b8935a;
+  --serif: 'Fraunces', 'Times New Roman', serif;
+  --sans: 'Geist', -apple-system, sans-serif;
+  --mono: 'Geist Mono', 'Courier New', monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* grain overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.35;
+  z-index: 100;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.055 0 0 0 0 0.165 0 0 0 0 0.28 0 0 0 0.15 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  mix-blend-mode: multiply;
+}
+
+/* subtle vertical guide lines */
+.guides {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+.guides::before,
+.guides::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--line);
+}
+.guides::before { left: 40px; }
+.guides::after { right: 40px; }
+
+/* --- Typography --- */
+h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: -0.01em; }
+h1 { font-variation-settings: 'opsz' 144; }
+h2 { font-variation-settings: 'opsz' 72; }
+
+a { color: inherit; }
+
+.mono { font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft); }
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.eyebrow::before {
+  content: '';
+  width: 28px; height: 1px;
+  background: var(--ink-soft);
+}
+
+/* --- Layout --- */
+.container { max-width: 1200px; margin: 0 auto; padding: 0 40px; position: relative; z-index: 1; }
+.container-narrow { max-width: 860px; margin: 0 auto; padding: 0 40px; }
+
+section { padding: 120px 0; position: relative; }
+section + section { border-top: 1px solid var(--line); }
+
+/* --- Nav --- */
+nav.top {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: blur(12px) saturate(1.1);
+  -webkit-backdrop-filter: blur(12px) saturate(1.1);
+  background: rgba(244, 239, 230, 0.78);
+  border-bottom: 1px solid var(--line);
+}
+.nav-inner {
+  max-width: 1200px; margin: 0 auto;
+  padding: 18px 40px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.logo {
+  font-family: var(--serif);
+  font-size: 1.3rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  display: flex; align-items: center; gap: 10px;
+}
+.logo-mark {
+  width: 22px; height: 22px;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+  position: relative;
+}
+.logo-mark::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  background: var(--ink);
+  border-radius: 50%;
+}
+.nav-links { display: flex; gap: 32px; align-items: center; }
+.nav-links a {
+  text-decoration: none;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  transition: color 0.2s;
+  position: relative;
+}
+.nav-links a:hover { color: var(--ink); }
+
+.nav-toggle {
+  display: none;
+  background: transparent;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  margin: -10px;
+}
+.nav-toggle span {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: var(--ink);
+  margin: 5px 0;
+  transition: transform 0.3s, opacity 0.3s;
+  border-radius: 1px;
+}
+.nav-toggle.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.nav-toggle.open span:nth-child(2) { opacity: 0; }
+.nav-toggle.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* --- Hero --- */
+.hero { padding: 90px 0 60px; overflow: hidden; }
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 60px;
+  position: relative;
+}
+.hero-eyebrow-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+.hero h1 {
+  font-size: clamp(3.2rem, 8vw, 6.4rem);
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+  font-weight: 400;
+  max-width: 14ch;
+}
+.hero h1 em {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--accent);
+}
+.hero-sub {
+  max-width: 52ch;
+  margin-top: 36px;
+  font-size: 1.13rem;
+  color: var(--ink-soft);
+  line-height: 1.6;
+}
+
+/* --- Check form --- */
+.check-card {
+  margin-top: 64px;
+  background: var(--paper);
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  padding: 44px 48px;
+  position: relative;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.8) inset,
+    0 20px 50px -30px rgba(14, 42, 71, 0.25);
+}
+.check-card::before {
+  content: '01';
+  position: absolute;
+  top: 20px; right: 24px;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--ink-faint);
+  letter-spacing: 0.1em;
+}
+.check-label {
+  display: block;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.25rem;
+  color: var(--ink);
+  margin-bottom: 18px;
+}
+.input-row {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1.5px solid var(--ink);
+  padding-bottom: 10px;
+  gap: 14px;
+}
+.input-row input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-family: var(--sans);
+  font-size: 1.3rem;
+  padding: 10px 0;
+  color: var(--ink);
+  outline: none;
+  letter-spacing: 0.02em;
+}
+.input-row input::placeholder { color: var(--ink-faint); font-style: italic; font-family: var(--serif); font-weight: 300; }
+.toggle-eye, .btn-check {
+  background: transparent;
+  border: none;
+  font-family: var(--sans);
+  cursor: pointer;
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+  padding: 8px 12px;
+  transition: color 0.2s;
+}
+.toggle-eye:hover { color: var(--ink); }
+.btn-check {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 12px 28px;
+  border-radius: 2px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  font-size: 0.95rem;
+  transition: background 0.2s, transform 0.15s;
+  white-space: nowrap;
+}
+.btn-check:hover { background: var(--accent-deep); }
+.btn-check:active { transform: scale(0.98); }
+.btn-check:disabled { opacity: 0.5; cursor: wait; }
+
+.privacy-note {
+  margin-top: 20px;
+  font-size: 0.82rem;
+  color: var(--ink-mute);
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.privacy-note::before {
+  content: '⟶';
+  font-family: var(--mono);
+  color: var(--ink-faint);
+}
+
+/* --- Result --- */
+.result {
+  margin-top: 28px;
+  padding: 28px 32px;
+  border-radius: 3px;
+  display: none;
+  animation: slidein 0.5s cubic-bezier(0.2, 0.7, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+.result.show { display: block; }
+.result.safe {
+  background: linear-gradient(180deg, rgba(78, 122, 94, 0.08) 0%, rgba(78, 122, 94, 0.02) 100%);
+  border-left: 3px solid var(--safe);
+}
+.result.danger {
+  background: linear-gradient(180deg, rgba(199, 106, 74, 0.08) 0%, rgba(199, 106, 74, 0.02) 100%);
+  border-left: 3px solid var(--accent);
+}
+.result.error {
+  background: rgba(184, 147, 90, 0.06);
+  border-left: 3px solid var(--warn);
+}
+.result h3 {
+  font-size: 1.75rem;
+  margin-bottom: 8px;
+  line-height: 1.1;
+}
+.result .big-num {
+  font-family: var(--serif);
+  font-size: 3.4rem;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--accent-deep);
+  letter-spacing: -0.03em;
+  display: block;
+  margin: 10px 0 6px;
+  font-variation-settings: 'opsz' 144;
+}
+.result.safe .big-num { color: var(--safe-deep); }
+.result p { color: var(--ink-soft); font-size: 0.98rem; max-width: 58ch; }
+.result .advice {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  font-size: 0.88rem;
+}
+
+@keyframes slidein {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Counter section --- */
+.counter-section {
+  padding: 80px 0;
+  text-align: center;
+  background: var(--bg-alt);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  position: relative;
+}
+.counter-section::before,
+.counter-section::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1px;
+  height: 24px;
+  background: var(--ink-faint);
+}
+.counter-section::before { top: -12px; }
+.counter-section::after { bottom: -12px; }
+
+.counter-label {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.15rem;
+  color: var(--ink-soft);
+  margin-bottom: 16px;
+  font-weight: 300;
+}
+.counter {
+  font-family: var(--serif);
+  font-size: clamp(3rem, 9vw, 7rem);
+  font-weight: 300;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--ink);
+  font-variation-settings: 'opsz' 144;
+}
+.counter-unit {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.2rem;
+  color: var(--ink-soft);
+  margin-top: 20px;
+  font-weight: 300;
+}
+.counter-dot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  background: var(--accent);
+  border-radius: 50%;
+  margin-right: 8px;
+  animation: pulse 2s ease-in-out infinite;
+  vertical-align: middle;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
+
+/* --- Section headers --- */
+.section-head {
+  margin-bottom: 72px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 60px;
+  align-items: baseline;
+}
+.section-num {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+  letter-spacing: 0.15em;
+}
+.section-head h2 {
+  font-size: clamp(2rem, 4.5vw, 3.4rem);
+  line-height: 1.02;
+  letter-spacing: -0.025em;
+  max-width: 20ch;
+}
+.section-head h2 em {
+  font-style: italic;
+  color: var(--accent);
+}
+.section-head-desc {
+  font-size: 1rem;
+  color: var(--ink-soft);
+  max-width: 48ch;
+  margin-top: 20px;
+  grid-column: 2;
+}
+
+/* --- Strength tester --- */
+.strength-wrap {
+  background: var(--paper);
+  border: 1px solid var(--line-strong);
+  padding: 44px 48px;
+  border-radius: 4px;
+  position: relative;
+}
+.strength-wrap::before {
+  content: '02';
+  position: absolute;
+  top: 20px; right: 24px;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--ink-faint);
+  letter-spacing: 0.1em;
+}
+.strength-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1.5px solid var(--ink);
+  padding: 10px 0;
+  font-family: var(--sans);
+  font-size: 1.3rem;
+  color: var(--ink);
+  outline: none;
+  margin-top: 18px;
+}
+.strength-input::placeholder { color: var(--ink-faint); font-style: italic; font-family: var(--serif); font-weight: 300; }
+
+.strength-meter {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+  margin-top: 28px;
+}
+.strength-bar {
+  height: 4px;
+  background: var(--line);
+  border-radius: 2px;
+  transition: background 0.4s;
+}
+.strength-bar.active.s1 { background: #c76a4a; }
+.strength-bar.active.s2 { background: #d18a4d; }
+.strength-bar.active.s3 { background: #b8935a; }
+.strength-bar.active.s4 { background: #7a8a5c; }
+.strength-bar.active.s5 { background: #4e7a5e; }
+
+.strength-feedback {
+  margin-top: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.strength-label {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.35rem;
+  color: var(--ink);
+}
+.strength-time {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  letter-spacing: 0.04em;
+}
+.strength-tips {
+  margin-top: 18px;
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+  min-height: 20px;
+  font-style: italic;
+  font-family: var(--serif);
+}
+
+/* --- Tips grid --- */
+.tips-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+}
+.tip {
+  background: var(--bg);
+  padding: 38px 32px;
+  transition: background 0.3s;
+  position: relative;
+}
+.tip:hover { background: var(--paper); }
+.tip-num {
+  font-family: var(--serif);
+  font-size: 2.8rem;
+  font-weight: 300;
+  line-height: 1;
+  font-style: italic;
+  color: var(--accent);
+  display: block;
+  margin-bottom: 20px;
+  font-variation-settings: 'opsz' 144;
+}
+.tip h3 {
+  font-size: 1.3rem;
+  font-weight: 500;
+  margin-bottom: 10px;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+.tip p {
+  font-size: 0.92rem;
+  color: var(--ink-soft);
+  line-height: 1.55;
+}
+
+/* --- Breaches --- */
+.breaches {
+  border-top: 1px solid var(--line);
+}
+.breach {
+  display: grid;
+  grid-template-columns: 100px 1fr auto;
+  gap: 32px;
+  padding: 32px 0;
+  border-bottom: 1px solid var(--line);
+  align-items: baseline;
+  transition: padding 0.3s;
+}
+.breach:hover {
+  padding-left: 16px;
+}
+.breach-date {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--ink-mute);
+  letter-spacing: 0.05em;
+}
+.breach-name {
+  font-family: var(--serif);
+  font-size: 1.5rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+.breach-desc {
+  margin-top: 6px;
+  font-size: 0.92rem;
+  color: var(--ink-soft);
+  max-width: 62ch;
+}
+.breach-count {
+  font-family: var(--serif);
+  font-size: 1.8rem;
+  font-weight: 400;
+  color: var(--accent-deep);
+  letter-spacing: -0.02em;
+  text-align: right;
+  font-variation-settings: 'opsz' 144;
+  white-space: nowrap;
+}
+.breach-count small {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--ink-mute);
+  letter-spacing: 0.1em;
+  margin-top: 2px;
+  font-style: normal;
+}
+
+/* --- How it works --- */
+.how {
+  background: var(--bg-alt);
+}
+.how-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: start;
+}
+.how-grid h2 {
+  font-size: clamp(2.2rem, 5vw, 3.6rem);
+  line-height: 1.02;
+  letter-spacing: -0.025em;
+}
+.how-grid h2 em { font-style: italic; color: var(--accent); }
+.how-steps { list-style: none; counter-reset: step; }
+.how-steps li {
+  counter-increment: step;
+  padding: 24px 0;
+  border-bottom: 1px solid var(--line);
+  padding-left: 56px;
+  position: relative;
+  font-size: 0.98rem;
+  color: var(--ink-soft);
+  line-height: 1.6;
+}
+.how-steps li:first-child { padding-top: 0; }
+.how-steps li:last-child { border-bottom: none; }
+.how-steps li::before {
+  content: counter(step, decimal-leading-zero);
+  position: absolute;
+  left: 0; top: 24px;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+  letter-spacing: 0.08em;
+}
+.how-steps li:first-child::before { top: 0; }
+.how-steps li strong {
+  color: var(--ink);
+  font-weight: 500;
+  display: block;
+  font-family: var(--serif);
+  font-size: 1.12rem;
+  margin-bottom: 4px;
+  font-weight: 500;
+  font-style: italic;
+}
+
+/* --- Footer --- */
+footer {
+  padding: 60px 0 40px;
+  border-top: 1px solid var(--line);
+  background: var(--bg-deep);
+}
+.footer-inner {
+  max-width: 1200px; margin: 0 auto;
+  padding: 0 40px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 40px;
+  align-items: start;
+}
+.footer-left p {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.05rem;
+  color: var(--ink-soft);
+  max-width: 42ch;
+}
+.footer-meta {
+  margin-top: 24px;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--ink-mute);
+  letter-spacing: 0.08em;
+}
+.footer-right {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: right;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+  letter-spacing: 0.06em;
+}
+.footer-right a { text-decoration: none; transition: color 0.2s; }
+.footer-right a:hover { color: var(--accent); }
+
+/* --- Loader --- */
+.spinner {
+  display: inline-block;
+  width: 14px; height: 14px;
+  border: 1.5px solid var(--ink-faint);
+  border-top-color: var(--ink);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* --- Reveal on scroll --- */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.9s cubic-bezier(0.2, 0.7, 0.3, 1), transform 0.9s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+.reveal.in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* --- Bot arena --- */
+.bot-arena {
+  background: var(--paper);
+  border: 1px solid var(--line-strong);
+  padding: 48px;
+  border-radius: 4px;
+  position: relative;
+}
+.bot-arena::before {
+  content: '03';
+  position: absolute;
+  top: 20px; right: 24px;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--ink-faint);
+  letter-spacing: 0.1em;
+}
+.bots {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 28px;
+  align-items: center;
+  margin: 48px 0 32px;
+}
+.bot {
+  background: var(--bg);
+  border: 1.5px solid var(--line-strong);
+  padding: 40px 24px 28px;
+  text-align: center;
+  transition: border-color 0.35s ease, background 0.35s ease, transform 0.35s ease;
+  border-radius: 3px;
+  position: relative;
+}
+.bot-face {
+  font-family: var(--mono);
+  font-size: 1.9rem;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: 0.04em;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.3s;
+}
+.bot.running .bot-face { animation: bot-breathe 2.8s ease-in-out infinite; }
+.bot-guesser.running .bot-face { animation: bot-jitter 0.18s ease-in-out infinite; }
+@keyframes bot-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+@keyframes bot-jitter {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(1px); }
+}
+.bot-name {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.22em;
+  color: var(--ink-soft);
+  margin-top: 14px;
+}
+.bot-status {
+  font-family: var(--serif);
+  font-style: italic;
+  color: var(--ink-soft);
+  margin-top: 10px;
+  font-size: 0.95rem;
+  line-height: 1.3;
+  min-height: 2.4em;
+}
+.bot-vs {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.4rem;
+  color: var(--ink-faint);
+  text-align: center;
+}
+.bot.running {
+  border-color: var(--ink);
+}
+.bot.found {
+  animation: found-flash 0.6s ease;
+  border-color: var(--accent);
+  background: rgba(199, 106, 74, 0.08);
+}
+@keyframes found-flash {
+  0% { background: rgba(199, 106, 74, 0.35); border-color: var(--accent); }
+  100% { background: rgba(199, 106, 74, 0.08); border-color: var(--accent); }
+}
+
+.bot-phase {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  text-align: center;
+  margin-bottom: 14px;
+  padding: 10px 16px;
+  background: var(--bg-alt);
+  border: 1px solid var(--line);
+  border-radius: 2px;
+}
+
+.phase-track {
+  display: flex;
+  gap: 0;
+  margin: 24px 0 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 2px;
+  overflow: hidden;
+  background: var(--bg-alt);
+}
+.phase-step {
+  flex: 1;
+  padding: 14px 18px;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  text-align: center;
+  border-right: 1px solid var(--line);
+  position: relative;
+  transition: color 0.4s, background 0.4s;
+}
+.phase-step:last-child { border-right: none; }
+.phase-step.active {
+  color: var(--paper);
+  background: var(--ink);
+}
+.phase-step.done {
+  color: var(--safe);
+  background: rgba(78, 122, 94, 0.08);
+}
+.phase-step.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  width: 100%;
+  background: var(--accent);
+  animation: phase-pulse 1.8s ease-in-out infinite;
+}
+@keyframes phase-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* Scrolling attempt feed */
+.bot-feed {
+  margin-top: 18px;
+  height: 170px;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  padding: 18px 24px;
+  overflow: hidden;
+  position: relative;
+  border-radius: 3px;
+  line-height: 1.5;
+}
+.bot-feed::before {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: 40px;
+  background: linear-gradient(180deg, var(--ink) 0%, transparent 100%);
+  pointer-events: none;
+  z-index: 2;
+}
+.bot-feed::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 40px;
+  background: linear-gradient(0deg, var(--ink) 0%, transparent 100%);
+  pointer-events: none;
+  z-index: 2;
+}
+.bot-feed-inner {
+  display: flex;
+  flex-direction: column-reverse;
+  height: 100%;
+}
+.bot-feed-entry {
+  display: flex;
+  gap: 16px;
+  color: rgba(250, 246, 237, 0.55);
+  animation: feed-in 0.25s cubic-bezier(0.2, 0.7, 0.3, 1);
+  white-space: nowrap;
+}
+.bot-feed-entry .feed-label {
+  color: rgba(250, 246, 237, 0.3);
+  width: 40px;
+  display: inline-block;
+}
+.bot-feed-entry.hit {
+  color: var(--accent);
+  font-weight: 600;
+}
+.bot-feed-entry:first-child {
+  color: var(--paper);
+}
+@keyframes feed-in {
+  from { transform: translateY(12px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Sweat drop on guesser */
+.bot-sweat {
+  position: absolute;
+  top: 18px;
+  right: 28px;
+  width: 10px;
+  height: 14px;
+  background: #4a7a9b;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(45deg);
+  opacity: 0;
+  pointer-events: none;
+}
+.bot-guesser.running .bot-sweat { animation: sweat-drop 1.6s ease-in-out infinite; }
+@keyframes sweat-drop {
+  0% { opacity: 0; transform: translateY(-6px) rotate(45deg); }
+  25% { opacity: 0.9; }
+  100% { opacity: 0; transform: translateY(40px) rotate(45deg); }
+}
+
+/* Confetti for found */
+.confetti {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.confetti-piece {
+  position: absolute;
+  width: 8px;
+  height: 14px;
+  top: -20px;
+  animation: confetti-fall 1.6s cubic-bezier(0.2, 0.5, 0.4, 1) forwards;
+}
+@keyframes confetti-fall {
+  to { transform: translateY(420px) rotate(720deg); opacity: 0; }
+}
+
+.bot-log {
+  background: var(--bg-deep);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 22px 28px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 28px;
+  align-items: center;
+}
+.bot-log-cell { min-width: 0; }
+.bot-log-label {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--ink-mute);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 4px;
+}
+.bot-log-value {
+  font-family: var(--mono);
+  font-size: 1rem;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bot-log-value.big {
+  font-family: var(--serif);
+  font-size: 1.6rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  font-variation-settings: 'opsz' 144;
+}
+
+.bot-controls {
+  margin-top: 28px;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.btn-stop {
+  background: var(--accent);
+  color: var(--paper);
+  border: none;
+  padding: 13px 26px;
+  border-radius: 2px;
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+.btn-stop:hover { background: var(--accent-deep); }
+.btn-stop:active { transform: scale(0.98); }
+
+.bot-found-msg {
+  margin-top: 24px;
+  padding: 28px 32px;
+  background: linear-gradient(180deg, rgba(199, 106, 74, 0.12) 0%, rgba(199, 106, 74, 0.02) 100%);
+  border-left: 3px solid var(--accent);
+  border-radius: 3px;
+  display: none;
+  animation: slidein 0.5s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+.bot-found-msg.show { display: block; }
+.bot-found-msg.safe {
+  background: linear-gradient(180deg, rgba(78, 122, 94, 0.08) 0%, rgba(78, 122, 94, 0.02) 100%);
+  border-left-color: var(--safe);
+}
+.bot-found-msg h3 {
+  font-size: 1.6rem;
+  margin-bottom: 8px;
+  line-height: 1.1;
+}
+.bot-found-msg .found-pw {
+  font-family: var(--mono);
+  background: var(--paper);
+  padding: 3px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 2px;
+  color: var(--accent-deep);
+  font-weight: 500;
+}
+.bot-found-msg p {
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+  margin-top: 8px;
+}
+
+/* --- Responsive --- */
+@media (max-width: 780px) {
+  section { padding: 72px 0; }
+  .container, .nav-inner, .footer-inner, .container-narrow { padding-left: 20px; padding-right: 20px; }
+  .hero { padding: 50px 0 24px; }
+  .check-card, .strength-wrap { padding: 24px 20px; }
+  .check-card::before, .strength-wrap::before, .bot-arena::before { top: 14px; right: 16px; }
+  .section-head { grid-template-columns: 1fr; gap: 16px; }
+  .section-head-desc { grid-column: 1; }
+  .section-head h2 { font-size: 1.9rem; }
+  .how-grid { grid-template-columns: 1fr; gap: 40px; }
+  .breach { grid-template-columns: 1fr; gap: 6px; padding: 24px 0; }
+  .breach-count { text-align: left; font-size: 1.4rem; }
+  .footer-inner { grid-template-columns: 1fr; padding: 0 20px; }
+  .footer-right { text-align: left; }
+  .input-row { flex-wrap: wrap; gap: 10px; }
+  .input-row input { font-size: 1.05rem; width: 100%; }
+  .toggle-eye { padding: 6px 10px; font-size: 0.82rem; }
+  .btn-check { width: 100%; margin-top: 8px; }
+  .guides { display: none; }
+  .bot-arena { padding: 22px 18px; }
+  .bots { grid-template-columns: 1fr; gap: 14px; }
+  .bot { padding: 28px 18px 22px; }
+  .bot-vs { transform: rotate(90deg); padding: 4px 0; }
+  .bot-log { grid-template-columns: 1fr; gap: 12px; text-align: left; padding: 18px 20px; }
+  .bot-controls .btn-check, .bot-controls .btn-stop { width: 100%; }
+  .phase-track { flex-direction: column; }
+  .phase-step { border-right: none; border-bottom: 1px solid var(--line); padding: 12px 16px; font-size: 0.68rem; }
+  .phase-step:last-child { border-bottom: none; }
+  .bot-feed { padding: 14px 16px; font-size: 0.76rem; height: 150px; }
+  .result { padding: 22px 20px; }
+  .result .big-num { font-size: 2.6rem; }
+  .result h3 { font-size: 1.45rem; }
+  .strength-feedback { flex-direction: column; align-items: flex-start; gap: 6px; }
+  .tip { padding: 28px 22px; }
+  .tip h3 { font-size: 1.15rem; }
+  .how-steps li { padding-left: 40px; }
+  .bot-found-msg { padding: 22px 20px; }
+  .counter { font-size: clamp(2.4rem, 14vw, 4rem); }
+  .hero h1 { font-size: clamp(2.4rem, 11vw, 4rem); max-width: 100%; }
+  .hero-sub { font-size: 1rem; margin-top: 24px; }
+  .logo { font-size: 1.15rem; }
+  .nav-inner { padding: 14px 20px; }
+
+  /* Hamburger nav on mobile */
+  .nav-toggle { display: block; z-index: 60; }
+  .nav-links {
+    position: fixed;
+    top: 54px;
+    left: 0; right: 0;
+    background: rgba(244, 239, 230, 0.98);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--line);
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 12px 20px 24px;
+    transform: translateY(-12px);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.25s cubic-bezier(0.2, 0.7, 0.3, 1), opacity 0.22s;
+  }
+  .nav-links.open {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .nav-links a {
+    font-size: 1.15rem;
+    padding: 14px 4px;
+    border-bottom: 1px solid var(--line);
+    font-family: var(--serif);
+    color: var(--ink);
+  }
+  .nav-links a:last-child { border-bottom: none; }
+}
+
+/* --- Fine print --- */
+::selection { background: var(--ink); color: var(--paper); }
+
+</style>
+</head>
+<body>
+
+<div class="guides"></div>
+
+<nav class="top">
+  <div class="nav-inner">
+    <a href="#" class="logo">
+      <span class="logo-mark"></span>
+      <span>Säkerkoll</span>
+    </a>
+    <button class="nav-toggle" id="nav-toggle" aria-label="Meny" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="nav-links" id="nav-links">
+      <a href="/">Start</a>
+      <a href="#kolla">Lösenord</a>
+      <a href="#bot">Botkampen</a>
+      <a href="/generator">Generator</a>
+      <a href="/url-koll">URL-koll</a>
+      <a href="/quiz">Säkerhetsquiz</a>
+      <a href="#intrang">Intrång</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero" id="kolla">
+  <div class="container">
+    <div class="hero-eyebrow-row">
+      <span class="eyebrow">säkerhetskontroll / 2026</span>
+      <span class="mono">v.1.0</span>
+    </div>
+    <h1 class="reveal">Har ditt lösenord redan <em>läckt?</em></h1>
+    <p class="hero-sub reveal">Vi kollar om ditt lösenord finns i kända dataintrång från LinkedIn, Facebook, Adobe och hundratals andra läckor. Ditt lösenord lämnar aldrig din dator — vi använder en teknik som heter <em>k-anonymitet</em>.</p>
+
+    <div class="check-card reveal">
+      <label class="check-label" for="pw-input">Skriv in lösenordet du vill kontrollera</label>
+      <div class="input-row">
+        <input type="password" id="pw-input" placeholder="ditt lösenord..." autocomplete="off" spellcheck="false">
+        <button class="toggle-eye" id="toggle-eye" type="button">visa</button>
+        <button class="btn-check" id="btn-check" type="button">Kontrollera</button>
+      </div>
+      <p class="privacy-note">Lösenordet hashas i din webbläsare. Bara fem tecken av hash-koden skickas iväg. Din dator avgör själv om det finns en träff.</p>
+      <div class="result" id="result"></div>
+    </div>
+  </div>
+</section>
+
+<section class="counter-section">
+  <div class="container-narrow">
+    <div class="counter-label"><span class="counter-dot"></span>just nu i kända läckor</div>
+    <div class="counter" id="counter">12 482 391 847</div>
+    <div class="counter-unit">lösenord <em>exponerade</em> på internet</div>
+  </div>
+</section>
+
+<section id="styrka">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="section-num">02</span>
+      <div>
+        <h2>Hur <em>starkt</em> är ditt lösenord egentligen?</h2>
+        <p class="section-head-desc">Skriv in ett lösenord nedan — vi mäter direkt i din webbläsare. Resultatet uppdateras medan du skriver. Inget skickas någonstans.</p>
+      </div>
+    </div>
+
+    <div class="strength-wrap reveal">
+      <label class="check-label" for="strength-input">Testa styrkan i realtid</label>
+      <input type="text" id="strength-input" class="strength-input" placeholder="skriv något..." autocomplete="off" spellcheck="false">
+      <div class="strength-meter" id="strength-meter">
+        <div class="strength-bar" data-i="1"></div>
+        <div class="strength-bar" data-i="2"></div>
+        <div class="strength-bar" data-i="3"></div>
+        <div class="strength-bar" data-i="4"></div>
+        <div class="strength-bar" data-i="5"></div>
+      </div>
+      <div class="strength-feedback">
+        <span class="strength-label" id="strength-label">Skriv för att börja</span>
+        <span class="strength-time" id="strength-time">— : —</span>
+      </div>
+      <div class="strength-tips" id="strength-tips">&nbsp;</div>
+    </div>
+  </div>
+</section>
+
+<section id="bot">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="section-num">03</span>
+      <div>
+        <h2>Kan en bot <em>knäcka</em> ditt lösenord?</h2>
+        <p class="section-head-desc">Skriv in ett testlösenord och starta botkampen. En bot vet lösenordet, den andra försöker gissa. Om gissar-boten hittar rätt — då vet du att ditt lösenord är för svagt. Oroa dig inte: inget skickas någonstans.</p>
+      </div>
+    </div>
+
+    <div class="bot-arena reveal">
+      <label class="check-label" for="bot-input">Ge boten något att jobba på</label>
+      <div class="input-row">
+        <input type="text" id="bot-input" placeholder="skriv ett testlösenord..." autocomplete="off" spellcheck="false">
+        <button class="btn-check" id="bot-start" type="button">Starta botkampen</button>
+      </div>
+
+      <div class="bots">
+        <div class="bot" id="bot-keeper">
+          <div class="bot-face" id="face-keeper">[ ¯v¯ ]</div>
+          <div class="bot-name">VET-BOTEN</div>
+          <div class="bot-status" id="status-keeper">vilar — har lösenordet i huvudet.</div>
+        </div>
+        <div class="bot-vs">mot</div>
+        <div class="bot" id="bot-guesser">
+          <div class="bot-sweat"></div>
+          <div class="bot-face" id="face-guesser">[ -_- ]</div>
+          <div class="bot-name">GISSAR-BOTEN</div>
+          <div class="bot-status" id="status-guesser">väntar på start...</div>
+        </div>
+      </div>
+
+      <div class="phase-track" id="phase-track">
+        <div class="phase-step" data-phase="common">Fas 1 · Vanliga ord</div>
+        <div class="phase-step" data-phase="variants">Fas 2 · Varianter</div>
+        <div class="phase-step" data-phase="brute">Fas 3 · Slumpmässigt</div>
+      </div>
+
+      <div class="bot-phase" id="bot-phase">Väntar på start...</div>
+
+      <div class="bot-feed" id="bot-feed"><div class="bot-feed-inner" id="bot-feed-inner"></div></div>
+
+      <div class="bot-log">
+        <div class="bot-log-cell">
+          <span class="bot-log-label">Försök</span>
+          <span class="bot-log-value big" id="bot-attempts">0</span>
+        </div>
+        <div class="bot-log-cell">
+          <span class="bot-log-label">Testar just nu</span>
+          <span class="bot-log-value" id="bot-current">—</span>
+        </div>
+        <div class="bot-log-cell">
+          <span class="bot-log-label">Tid</span>
+          <span class="bot-log-value big" id="bot-elapsed">00:00</span>
+        </div>
+      </div>
+
+      <div class="bot-controls">
+        <button class="btn-stop" id="bot-stop" style="display:none" type="button">Stoppa boten</button>
+      </div>
+
+      <div class="bot-found-msg" id="bot-found-msg"></div>
+    </div>
+  </div>
+</section>
+
+<section id="intrang">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="section-num">04</span>
+      <div>
+        <h2>Senaste stora <em>dataintrången</em></h2>
+        <p class="section-head-desc">Det här är några av de största läckor som hänt de senaste åren. Om du har ett konto på någon av dessa tjänster är chansen stor att dina uppgifter redan är ute.</p>
+      </div>
+    </div>
+
+    <div class="breaches" id="breaches"></div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="section-num">05</span>
+      <div>
+        <h2>Åtta regler för <em>bättre</em> lösenord</h2>
+        <p class="section-head-desc">Enkla, genomtestade principer. Följ dem och du ligger långt före 95% av alla internetanvändare.</p>
+      </div>
+    </div>
+
+    <div class="tips-grid reveal">
+      <div class="tip">
+        <span class="tip-num">i.</span>
+        <h3>Längd slår komplexitet</h3>
+        <p>Ett lösenord på 16 tecken med bara bokstäver är tryggare än "P@ss1!". Sikta på minst 16 tecken — helst 20+.</p>
+      </div>
+      <div class="tip">
+        <span class="tip-num">ii.</span>
+        <h3>Använd en mening</h3>
+        <p>Fyra slumpade ord är både lätta att minnas och svåra att knäcka. "korrekt-häst-batteri-häftstift" tar miljarder år att gissa.</p>
+      </div>
+      <div class="tip">
+        <span class="tip-num">iii.</span>
+        <h3>Unikt för varje konto</h3>
+        <p>Om ett lösenord läcker från en sida — och det kommer att hända — ska inga andra konton påverkas. Återanvänd aldrig.</p>
+      </div>
+      <div class="tip">
+        <span class="tip-num">iv.</span>
+        <h3>Skaffa en lösenordshanterare</h3>
+        <p>Bitwarden, 1Password eller Apples iCloud Nycklar. Gratisalternativ finns. Då behöver du bara komma ihåg ett huvudlösenord.</p>
+      </div>
+      <div class="tip">
+        <span class="tip-num">v.</span>
+        <h3>Slå på tvåstegsverifiering</h3>
+        <p>Även om lösenordet läcker kan ingen logga in utan din telefon. Gör det överallt — särskilt email och bank.</p>
+      </div>
+      <div class="tip">
+        <span class="tip-num">vi.</span>
+        <h3>Undvik personlig info</h3>
+        <p>Ditt namn, födelsedatum, husdjurets namn eller favoritlag. Allt går att googla fram på 30 sekunder — använd inget som har med dig att göra.</p>
+      </div>
+      <div class="tip">
+        <span class="tip-num">vii.</span>
+        <h3>Byt bara när det händer något</h3>
+        <p>Myten att byta lösenord var tredje månad gör att folk skapar svagare lösenord. Byt när det läcker eller du misstänker något — inte på schema.</p>
+      </div>
+      <div class="tip">
+        <span class="tip-num">viii.</span>
+        <h3>Städa gamla konton</h3>
+        <p>Inaktiva konton hos tjänster du glömt bort är en svag länk. När de hackas kan spåret leda vidare. Stäng dem eller byt lösenord.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="how" id="sakert">
+  <div class="container">
+    <div class="how-grid">
+      <div class="reveal">
+        <span class="section-num" style="display:block; margin-bottom: 24px;">06</span>
+        <h2>Är det här <em>verkligen</em> säkert att använda?</h2>
+        <p style="margin-top: 28px; color: var(--ink-soft); font-size: 1.05rem; line-height: 1.65; max-width: 42ch;">Ja. Ditt lösenord lämnar aldrig din webbläsare. Tekniken heter <em style="font-family:var(--serif)">k-anonymitet</em> och är exakt samma som lösenordshanterare som 1Password och Bitwarden använder internt.</p>
+      </div>
+
+      <ol class="how-steps reveal">
+        <li>
+          <strong>Du skriver in ditt lösenord</strong>
+          Din webbläsare tar emot texten. Inget skickas till servern ännu.
+        </li>
+        <li>
+          <strong>Lösenordet "hashas"</strong>
+          Det omvandlas till en lång kod, till exempel <span class="mono" style="font-size:0.78rem">5BAA61E4C9B93F3F...</span> — omöjlig att vända tillbaka.
+        </li>
+        <li>
+          <strong>Bara 5 tecken skickas</strong>
+          Endast <span class="mono" style="font-size:0.78rem">5BAA6</span> går till HaveIBeenPwned. Ingen kan gissa ditt lösenord från det.
+        </li>
+        <li>
+          <strong>Servern skickar tillbaka en lista</strong>
+          Vi får hundratals hashar som börjar på samma sätt. Din webbläsare jämför lokalt.
+        </li>
+        <li>
+          <strong>Du ser resultatet</strong>
+          Om en match hittas är lösenordet läckt. Om inte — du är sannolikt trygg.
+        </li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-left">
+      <p>Byggd för att vara enkel att använda och omöjlig att missbruka. Ingen spårning, inga cookies, ingen reklam.</p>
+      <div class="footer-meta">SÄKERKOLL · 2026 · BYGGD AV CETTO</div>
+    </div>
+    <div class="footer-right">
+      <a href="https://haveibeenpwned.com/API/v3" target="_blank" rel="noopener">Data: HaveIBeenPwned ↗</a>
+      <a href="#kolla">Till toppen ↑</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ======================================================================
+// Mobile nav toggle
+// ======================================================================
+(function() {
+  const toggle = document.getElementById('nav-toggle');
+  const links = document.getElementById('nav-links');
+  if (!toggle || !links) return;
+  toggle.addEventListener('click', () => {
+    const open = toggle.classList.toggle('open');
+    links.classList.toggle('open', open);
+    toggle.setAttribute('aria-expanded', open);
+  });
+  links.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', () => {
+      toggle.classList.remove('open');
+      links.classList.remove('open');
+      toggle.setAttribute('aria-expanded', 'false');
+    });
+  });
+})();
+
+// ======================================================================
+// SHA-1 via SubtleCrypto
+// ======================================================================
+async function sha1(str) {
+  const buf = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('')
+    .toUpperCase();
+}
+
+// ======================================================================
+// Password leak check (k-anonymity via Pwned Passwords API)
+// ======================================================================
+async function checkPassword(password) {
+  const hash = await sha1(password);
+  const prefix = hash.substring(0, 5);
+  const suffix = hash.substring(5);
+  const res = await fetch(`https://api.pwnedpasswords.com/range/${prefix}`, {
+    headers: { 'Add-Padding': 'true' }
+  });
+  if (!res.ok) throw new Error('network');
+  const text = await res.text();
+  for (const line of text.split('\n')) {
+    const [s, count] = line.trim().split(':');
+    if (s === suffix) return parseInt(count, 10);
+  }
+  return 0;
+}
+
+// ======================================================================
+// UI: leak check
+// ======================================================================
+const pwInput = document.getElementById('pw-input');
+const btnCheck = document.getElementById('btn-check');
+const toggleEye = document.getElementById('toggle-eye');
+const result = document.getElementById('result');
+
+toggleEye.addEventListener('click', () => {
+  const show = pwInput.type === 'password';
+  pwInput.type = show ? 'text' : 'password';
+  toggleEye.textContent = show ? 'dölj' : 'visa';
+});
+
+async function runCheck() {
+  const pw = pwInput.value;
+  if (!pw) {
+    showResult('error', 'Skriv in ett lösenord', 'Du måste skriva något i fältet ovan.');
+    return;
+  }
+  btnCheck.disabled = true;
+  btnCheck.innerHTML = '<span class="spinner"></span>Kollar...';
+  result.classList.remove('show');
+
+  try {
+    const count = await checkPassword(pw);
+    if (count === 0) {
+      showResult('safe',
+        'Inget spår av det här lösenordet',
+        null,
+        'Det betyder att lösenordet inte finns i några kända läckor. Men — det betyder inte att det är starkt. Kolla också hur starkt det är i testet nedan.'
+      );
+    } else {
+      showResult('danger',
+        'Det här lösenordet har läckt',
+        count,
+        `Det hittades ${formatNumber(count)} gånger i kända läckor. Det betyder att hackare redan har det i sina listor. Byt det direkt — särskilt om du använder samma lösenord på andra sidor.`
+      );
+    }
+  } catch (e) {
+    showResult('error', 'Något gick fel', null, 'Kunde inte kontakta databasen just nu. Försök igen om en stund.');
+  } finally {
+    btnCheck.disabled = false;
+    btnCheck.textContent = 'Kontrollera';
+  }
+}
+
+function showResult(type, title, count, advice) {
+  result.className = 'result show ' + type;
+  let numHTML = '';
+  if (type === 'danger' && count !== null) {
+    numHTML = `<span class="big-num">${formatNumber(count)}</span><div class="mono" style="font-size:0.72rem; margin-bottom:14px;">Antal gånger funnet i läckor</div>`;
+  }
+  result.innerHTML = `
+    <h3>${title}</h3>
+    ${numHTML}
+    <p>${advice || ''}</p>
+  `;
+}
+
+function formatNumber(n) {
+  return n.toLocaleString('sv-SE').replace(/,/g, ' ');
+}
+
+btnCheck.addEventListener('click', runCheck);
+pwInput.addEventListener('keydown', e => { if (e.key === 'Enter') runCheck(); });
+
+// ======================================================================
+// Password strength (custom, no zxcvbn to keep it light)
+// ======================================================================
+const strengthInput = document.getElementById('strength-input');
+const strengthLabel = document.getElementById('strength-label');
+const strengthTime = document.getElementById('strength-time');
+const strengthTips = document.getElementById('strength-tips');
+const strengthBars = document.querySelectorAll('.strength-bar');
+
+const commonPasswords = new Set([
+  'password', 'lösenord', '123456', '12345678', 'qwerty', 'abc123',
+  'password1', 'iloveyou', 'admin', 'welcome', 'monkey', 'letmein',
+  'dragon', 'sunshine', 'princess', 'football', 'hockey', 'bajen',
+  'hejhej', 'lösen', 'svenska', 'stockholm', 'sverige', 'ikea',
+  'password123', 'qwerty123', '111111', '000000'
+]);
+
+function estimateStrength(pw) {
+  if (!pw) return { score: 0, label: 'Skriv för att börja', time: '— : —', tip: '' };
+
+  const lower = pw.toLowerCase();
+  if (commonPasswords.has(lower)) {
+    return { score: 0, label: 'Hemskt', time: 'knäcks direkt', tip: 'Det här är ett av världens vanligaste lösenord.' };
+  }
+
+  let pool = 0;
+  if (/[a-z]/.test(pw)) pool += 26;
+  if (/[A-Z]/.test(pw)) pool += 26;
+  if (/\d/.test(pw)) pool += 10;
+  if (/[^a-zA-Z0-9]/.test(pw)) pool += 32;
+  if (pool === 0) pool = 26;
+
+  // entropy in bits
+  let entropy = pw.length * Math.log2(pool);
+
+  // penalize repetition and sequences
+  const uniqueRatio = new Set(pw).size / pw.length;
+  entropy *= (0.5 + 0.5 * uniqueRatio);
+  if (/(.)\1{2,}/.test(pw)) entropy *= 0.75;
+  // sequence penalty only for short passwords — in a long string it's usually coincidence
+  if (pw.length <= 12 && /(012|123|234|345|456|567|678|789|890|abc|bcd|cde|def|qwe|wer|ert|asd)/i.test(pw)) entropy *= 0.7;
+
+  // penalize short
+  if (pw.length < 8) entropy *= 0.5;
+  if (pw.length < 6) entropy *= 0.3;
+
+  // guesses = 2^entropy, attacker does 1e10 per second (offline GPU)
+  const guesses = Math.pow(2, entropy) / 2;
+  const seconds = guesses / 1e10;
+
+  let score, label, tip;
+  if (seconds < 60) { score = 1; label = 'Mycket svagt'; tip = 'Knäcks på under en minut. Lägg till längd och variation direkt.'; }
+  else if (seconds < 86400) { score = 2; label = 'Svagt'; tip = 'Håller högst ett dygn. Gör det längre — minst 12 tecken.'; }
+  else if (seconds < 31536000) { score = 3; label = 'Medel'; tip = 'Okej för vardagskonton men inte för bank eller email. Sikta på 16+ tecken.'; }
+  else if (seconds < 31536000 * 100) { score = 4; label = 'Starkt'; tip = 'Bra jobbat. Lösenordet står emot det mesta.'; }
+  else { score = 5; label = 'Mycket starkt'; tip = 'Utmärkt. Praktiskt taget oknäckbart.'; }
+
+  return { score, label, time: formatTime(seconds), tip };
+}
+
+function formatTime(s) {
+  if (s < 1) return 'knäcks direkt';
+  if (s < 60) return `≈ ${Math.round(s)} sek`;
+  if (s < 3600) return `≈ ${Math.round(s/60)} min`;
+  if (s < 86400) return `≈ ${Math.round(s/3600)} tim`;
+  if (s < 2592000) return `≈ ${Math.round(s/86400)} dagar`;
+  if (s < 31536000) return `≈ ${Math.round(s/2592000)} månader`;
+  if (s < 31536000 * 100) return `≈ ${Math.round(s/31536000)} år`;
+  if (s < 31536000 * 1e6) return `≈ ${Math.round(s/31536000/1000)} tusen år`;
+  if (s < 31536000 * 1e9) return `≈ ${Math.round(s/31536000/1e6)} miljoner år`;
+  return `≈ miljarder år`;
+}
+
+function updateStrength() {
+  const { score, label, time, tip } = estimateStrength(strengthInput.value);
+  strengthLabel.textContent = label;
+  strengthTime.textContent = time;
+  strengthTips.innerHTML = tip || '&nbsp;';
+  strengthBars.forEach((bar, i) => {
+    bar.classList.remove('active', 's1', 's2', 's3', 's4', 's5');
+    if (i < score) bar.classList.add('active', 's' + score);
+  });
+}
+strengthInput.addEventListener('input', updateStrength);
+
+// ======================================================================
+// Counter animation (approx current global leak count)
+// ======================================================================
+const counterEl = document.getElementById('counter');
+let counterVal = 12482391847;
+function renderCounter() {
+  counterEl.textContent = counterVal.toLocaleString('sv-SE').replace(/,/g, ' ');
+}
+setInterval(() => {
+  counterVal += Math.floor(Math.random() * 9) + 1;
+  renderCounter();
+}, 1800);
+renderCounter();
+
+// ======================================================================
+// Breaches list (hardcoded — CORS blocks live API from browser)
+// ======================================================================
+const breaches = [
+  {
+    date: 'JAN 2024',
+    name: 'Mother of All Breaches',
+    desc: 'Den största kompilerade läckan någonsin. 26 miljarder poster från LinkedIn, Twitter, Tencent, Weibo och hundratals andra tjänster samlade i en databas.',
+    count: '26 miljarder',
+    unit: 'POSTER'
+  },
+  {
+    date: 'AUG 2024',
+    name: 'National Public Data',
+    desc: 'Amerikansk datamäklare läckte personuppgifter — namn, adresser och socialförsäkringsnummer för nästan hela USA:s befolkning.',
+    count: '2,9 miljarder',
+    unit: 'POSTER'
+  },
+  {
+    date: 'JUL 2024',
+    name: 'Ticketmaster',
+    desc: 'Hackargruppen ShinyHunters stal användardata, kontaktuppgifter och delvis kreditkortsinfo. En av de största läckorna 2024.',
+    count: '560 milj.',
+    unit: 'ANVÄNDARE'
+  },
+  {
+    date: 'MAR 2024',
+    name: 'AT&T',
+    desc: 'Amerikansk telekom-jätte läckte personnummer och kundinformation. Vissa data började läcka redan 2021 men bekräftades 2024.',
+    count: '73 milj.',
+    unit: 'KUNDER'
+  },
+  {
+    date: 'JUN 2021',
+    name: 'LinkedIn',
+    desc: 'Skrapad profilinformation för nästan alla användare — email, telefonnummer, jobbtitlar. Används fortfarande i phishing-attacker.',
+    count: '700 milj.',
+    unit: 'ANVÄNDARE'
+  },
+  {
+    date: 'APR 2019',
+    name: 'Facebook',
+    desc: 'Telefonnummer, fullständiga namn och profildetaljer för en halv miljard användare dök upp på ett hacker-forum. Äldre data, men fortfarande aktuell.',
+    count: '533 milj.',
+    unit: 'ANVÄNDARE'
+  },
+  {
+    date: 'JAN 2019',
+    name: 'Collection #1–5',
+    desc: 'En samling av tusentals tidigare läckor packade ihop. Över 2 miljarder unika email-lösenord-kombinationer. Används dagligen i credential stuffing.',
+    count: '2,2 miljarder',
+    unit: 'POSTER'
+  },
+  {
+    date: 'OKT 2013',
+    name: 'Adobe',
+    desc: 'Den klassiska läckan som väckte världen. Dåligt krypterade lösenord och hintar gjorde att en stor del gick att knäcka.',
+    count: '153 milj.',
+    unit: 'ANVÄNDARE'
+  }
+];
+
+const breachesEl = document.getElementById('breaches');
+breachesEl.innerHTML = breaches.map(b => `
+  <div class="breach">
+    <span class="breach-date">${b.date}</span>
+    <div>
+      <div class="breach-name">${b.name}</div>
+      <div class="breach-desc">${b.desc}</div>
+    </div>
+    <div class="breach-count">${b.count}<small>${b.unit}</small></div>
+  </div>
+`).join('');
+
+// ======================================================================
+// Reveal on scroll
+// ======================================================================
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('in');
+      io.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.12 });
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+// hero reveal immediately
+window.addEventListener('load', () => {
+  document.querySelectorAll('.hero .reveal').forEach((el, i) => {
+    setTimeout(() => el.classList.add('in'), 100 + i * 120);
+  });
+});
+
+// ======================================================================
+// Bot vs Bot — password cracking demo
+// ======================================================================
+const topPasswords = [
+  '123456','password','12345678','qwerty','123456789','12345','1234','111111','1234567','dragon',
+  'abc123','football','iloveyou','admin','welcome','monkey','login','123123','qwertyuiop','starwars',
+  'letmein','shadow','master','666666','121212','jennifer','hunter','buster','harley','ranger',
+  'michael','andrew','charlie','jordan','superman','ashley','bailey','passw0rd','trustno1','freedom',
+  'whatever','sunshine','chocolate','princess','1q2w3e4r','batman','liverpool','baseball','soccer','hockey',
+  'taylor','matrix','cookie','computer','internet','nicole','thomas','yellow','merlin','pepper',
+  'hannah','samantha','joshua','maggie','william','daniel','robert','michelle','corvette','bigdog',
+  'matthew','patrick','martin','ginger','cameron','james','john','mike','david','killer',
+  'richard','orange','summer','hello','1234qwer','123qwe','qwe123','qwerty1','qwerty123','p@ssw0rd',
+  'Password1','password1','password123','P@ssword','Password123','123abc','abc1234','admin1','admin123','root',
+  'administrator','changeme','passwd','secret','qazwsx','zaq12wsx','1qaz2wsx','asdfgh','asdfghjk','zxcvbn',
+  'zxcvbnm','poiuyt','lkjhgf','mnbvcx','11111111','00000000','55555','88888888','987654321','098765',
+  'hejhej','hej123','svensson','sverige','stockholm','gothenburg','malmö','göteborg','uppsala','göteborg1',
+  'bajen','hammarby','aik','djurgården','malmöff','ikea','volvo','saab','abba','spotify',
+  'hejsan','tjena','älskar','mormor','kakor','kanelbulle','midsommar','julgran','glögg','fika',
+  // svenska namn
+  'anna','maria','erik','johan','lars','per','karin','anders','peter','jonas',
+  'mikael','fredrik','thomas','martin','daniel','niklas','henrik','patrik','david','oscar',
+  'emma','sara','julia','johanna','elin','hanna','ida','sofie','emil','jacob',
+  'linnea','klara','ronja','pippi','astrid','lisa','eva','kristina','robin','adam',
+  // familj & k\u00e4rlek
+  'mamma','pappa','syster','bror','farmor','morfar','farfar','\u00e4lskling','hj\u00e4rta','k\u00e4rlek',
+  'kram','puss','gullunge','sambo','flickv\u00e4n','pojkv\u00e4n',
+  // svensk mat & dryck
+  'kaffe','bulle','lussekatt','pepparkaka','k\u00f6ttbullar','lingonsylt','falukorv','kn\u00e4ckebr\u00f6d','sn\u00f6re','surstr\u00f6mming',
+  'lingon','bl\u00e5b\u00e4r','smultron','saft','snaps','akvavit','mj\u00f6lk','filmj\u00f6lk','pytt','r\u00e4kmacka',
+  // st\u00e4der
+  'lund','j\u00f6nk\u00f6ping','g\u00e4vle','bor\u00e5s','\u00f6rebro','ume\u00e5','karlstad','v\u00e4xj\u00f6','sundsvall','helsingborg',
+  'eskilstuna','norrk\u00f6ping','lule\u00e5','kalmar','visby','falun','\u00f6stersund','kiruna',
+  // sport & kultur
+  'zlatan','forsberg','ibrahimovic','henke','lundqvist','kent','roxette','ericsson','klarna',
+  'fotboll','ishockey','hockey','bandy','handboll','skidor','friidrott','vasaloppet',
+  'wallander','beck','vasa','gustav','bernadotte',
+  // natur & v\u00e4der
+  'skog','sj\u00f6','fj\u00e4ll','berg','hav','kust','strand','fjord','\u00e4lv','\u00e4ng',
+  'sol','regn','sn\u00f6','moln','vind','storm','sommar','vinter','host','v\u00e5r',
+  // h\u00f6gtider
+  'jul','p\u00e5sk','valborg','lucia','nyar','semester','sommarlov','hostlov','julafton',
+  // enkla ord & fraser
+  'tack','ursakta','forlat','valkommen','godmorgon','godnatt','hejdå','jalla','tjabba','grymt',
+  'svensk','svenska','gud','jesus','abraham',
+  // djur
+  'hund','katt','kanin','h\u00e4st','hast','fisk','f\u00e5gel','fagel','orm','mus',
+  'bj\u00f6rn','bjorn','r\u00e4v','rav','\u00e4lg','alg','varg','igelkott','ekorre','sk\u00f6ldpadda','papegoja',
+  // svenska versioner av vanliga l\u00f6senord
+  'losenord','losen','inloggning','anvandare','admin1234','sverige123','stockholm1','goteborg1','malmo1','uppsala1',
+  'anna123','erik123','johan1','maria1','lars123','sommar2024','vinter2024','jul2024','jul2025','jul2026',
+  'kanin12','hund12','katt12','mamma1','pappa1','mormor1',
+  'cetto','cetto12','cetto123','bugcrowd','hacker','hacker123','pentest','kalilinux','nmap','metasploit',
+  'pokemon','ninja','letmein1','welcome1','welcome123','master1','secret1','winter','spring','summer1',
+  'dragon1','angel','ashley1','michael1','football1','jordan1','justin','andrea','joseph','anthony',
+  'solo','pokemon1','cheese','rainbow','rainbow1','forever','butterfly','iloveyou1','lovely','sweet',
+  'test','test123','testing','demo','demo123','user','user123','login1','guest','guest123',
+  '5201314','woaini','ni hao','asdf','asdf1234','iloveu','loveyou','baby','baby1','beautiful'
+];
+
+function* variantsGenerator(commonList) {
+  // pure numeric codes first — PIN-style
+  for (let n = 0; n <= 9999; n++) yield String(n).padStart(4, '0');
+  for (let n = 0; n <= 999999; n++) yield String(n);
+  // word variants
+  for (const pw of commonList) {
+    yield pw[0].toUpperCase() + pw.slice(1);
+    yield pw.toUpperCase();
+    yield pw + '!';
+    yield pw + '?';
+    yield pw + '.';
+    yield '!' + pw;
+    yield pw.replace(/a/gi,'@').replace(/e/gi,'3').replace(/o/gi,'0').replace(/s/gi,'$');
+    for (let n = 0; n < 100; n++) yield pw + String(n).padStart(2, '0');
+    for (let y = 1990; y <= 2026; y++) yield pw + y;
+  }
+}
+
+function* bruteGenerator() {
+  const letters = 'abcdefghijklmnopqrstuvwxyz';
+  const alnum = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  // short alphanumeric first — catches things like 'ab12', 'a1b2'
+  for (let len = 1; len <= 4; len++) yield* bruteGen(alnum, len);
+  // longer pure lowercase
+  for (let len = 5; len <= 10; len++) yield* bruteGen(letters, len);
+  // longer alphanumeric (slow)
+  for (let len = 5; len <= 8; len++) yield* bruteGen(alnum, len);
+}
+
+function buildCommonList() {
+  const shuffled = [...topPasswords];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
+function* bruteGen(chars, len, prefix = '') {
+  if (len === 0) { yield prefix; return; }
+  for (const c of chars) yield* bruteGen(chars, len - 1, prefix + c);
+}
+
+const botInput = document.getElementById('bot-input');
+const botStart = document.getElementById('bot-start');
+const botStop = document.getElementById('bot-stop');
+const botKeeperEl = document.getElementById('bot-keeper');
+const botGuesserEl = document.getElementById('bot-guesser');
+const faceKeeper = document.getElementById('face-keeper');
+const faceGuesser = document.getElementById('face-guesser');
+const statusKeeper = document.getElementById('status-keeper');
+const statusGuesser = document.getElementById('status-guesser');
+const botCurrent = document.getElementById('bot-current');
+const botAttempts = document.getElementById('bot-attempts');
+const botElapsed = document.getElementById('bot-elapsed');
+const botFoundMsg = document.getElementById('bot-found-msg');
+
+const keeperStatuses = [
+  'jag vet, jag säger inget.',
+  'stolt över mitt lösenord.',
+  'ingen kommer gissa detta.',
+  'läser det i huvudet...',
+  'pappret är säkert.'
+];
+const guesserFaces = ['[ >_< ]','[ o_o ]','[ O_O ]','[ @_@ ]','[ $_$ ]','[ ·_· ]','[ >.< ]'];
+const guesserStatuses = [
+  'tänker hårt...',
+  'snart har jag det...',
+  'håller på...',
+  'bara lite till...',
+  'mums, data!',
+  'testar allt...'
+];
+
+let botRunning = false;
+let botAttemptsCount = 0;
+let botStartTimeMs = 0;
+let botGen = null;
+let botFaceInterval = null;
+let botStatusInterval = null;
+let botTargetPw = '';
+let botLastUiUpdate = 0;
+
+let botCommonList = null;
+let botCommonIndex = 0;
+let botBruteGen = null;
+let botPhase = 'idle';
+const botPhaseEl = () => document.getElementById('bot-phase');
+const botFeedInner = () => document.getElementById('bot-feed-inner');
+
+function setPhaseTrack(phase) {
+  const order = ['common', 'variants', 'brute'];
+  const idx = order.indexOf(phase);
+  document.querySelectorAll('.phase-step').forEach((el, i) => {
+    el.classList.toggle('active', i === idx);
+    el.classList.toggle('done', i < idx);
+  });
+}
+
+function resetPhaseTrack() {
+  document.querySelectorAll('.phase-step').forEach(el => {
+    el.classList.remove('active', 'done');
+  });
+}
+
+function pushFeed(guess, isHit = false) {
+  const inner = botFeedInner();
+  if (!inner) return;
+  const el = document.createElement('div');
+  el.className = 'bot-feed-entry' + (isHit ? ' hit' : '');
+  const short = guess.length > 30 ? guess.slice(0, 30) + '…' : guess;
+  el.innerHTML = `<span class="feed-label">&gt;</span><span>${escapeHtml(short)}</span>`;
+  inner.insertBefore(el, inner.firstChild);
+  while (inner.children.length > 14) inner.removeChild(inner.lastChild);
+}
+
+function clearFeed() {
+  const inner = botFeedInner();
+  if (inner) inner.innerHTML = '';
+}
+
+function burstConfetti() {
+  const arena = document.querySelector('.bot-arena');
+  if (!arena) return;
+  const layer = document.createElement('div');
+  layer.className = 'confetti';
+  const colors = ['#c76a4a','#b8935a','#4e7a5e','#0e2a47','#a85336','#d18a4d'];
+  for (let i = 0; i < 40; i++) {
+    const p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.left = (Math.random() * 100) + '%';
+    p.style.background = colors[Math.floor(Math.random() * colors.length)];
+    p.style.animationDelay = (Math.random() * 0.3) + 's';
+    p.style.animationDuration = (1.2 + Math.random() * 0.8) + 's';
+    p.style.transform = `rotate(${Math.random() * 360}deg)`;
+    layer.appendChild(p);
+  }
+  arena.appendChild(layer);
+  setTimeout(() => layer.remove(), 2200);
+}
+
+function startBot() {
+  const target = botInput.value;
+  if (!target) {
+    botInput.focus();
+    return;
+  }
+  botRunning = true;
+  botAttemptsCount = 0;
+  botStartTimeMs = performance.now();
+  botCommonList = buildCommonList();
+  botCommonIndex = 0;
+  botBruteGen = null;
+  botPhase = 'common';
+  botTargetPw = target;
+
+  faceKeeper.textContent = '[ ¯v¯ ]';
+  faceGuesser.textContent = '[ >_< ]';
+  statusKeeper.textContent = keeperStatuses[0];
+  statusGuesser.textContent = guesserStatuses[0];
+  botKeeperEl.classList.add('running');
+  botGuesserEl.classList.add('running');
+  botKeeperEl.classList.remove('found');
+  botGuesserEl.classList.remove('found');
+  botFoundMsg.classList.remove('show');
+  botStart.style.display = 'none';
+  botStop.style.display = 'inline-block';
+  botInput.disabled = true;
+  if (botPhaseEl()) botPhaseEl().textContent = 'Testar vanliga lösenord i läsbar takt — njut av showen';
+  clearFeed();
+  setPhaseTrack('common');
+
+  botFaceInterval = setInterval(() => {
+    if (!botRunning) return;
+    faceGuesser.textContent = guesserFaces[Math.floor(Math.random() * guesserFaces.length)];
+  }, 140);
+
+  botStatusInterval = setInterval(() => {
+    if (!botRunning) return;
+    statusKeeper.textContent = keeperStatuses[Math.floor(Math.random() * keeperStatuses.length)];
+    statusGuesser.textContent = guesserStatuses[Math.floor(Math.random() * guesserStatuses.length)];
+  }, 2200);
+
+  tickCommon();
+}
+
+function tickCommon() {
+  if (!botRunning) return;
+  if (botCommonIndex >= botCommonList.length) {
+    botPhase = 'variants';
+    botBruteGen = variantsGenerator(botCommonList);
+    setPhaseTrack('variants');
+    if (botPhaseEl()) botPhaseEl().textContent = 'Varianter — ord + siffror, ord + årtal, leet-skrivning';
+    requestAnimationFrame(tickBrute);
+    return;
+  }
+  const guess = botCommonList[botCommonIndex++];
+  botAttemptsCount++;
+  botCurrent.textContent = guess;
+  botAttempts.textContent = botAttemptsCount.toLocaleString('sv-SE').replace(/,/g, ' ');
+  const elapsed = (performance.now() - botStartTimeMs) / 1000;
+  botElapsed.textContent = formatElapsed(elapsed);
+  pushFeed(guess);
+
+  if (guess === botTargetPw) {
+    botRunning = false;
+    endBot('found');
+    return;
+  }
+  setTimeout(tickCommon, 70);
+}
+
+function tickBrute() {
+  if (!botRunning) return;
+  const batchSize = 800;
+  let lastTried = '';
+  let hit = false;
+  let exhausted = false;
+
+  for (let i = 0; i < batchSize; i++) {
+    const { value, done } = botBruteGen.next();
+    if (done) { exhausted = true; break; }
+    botAttemptsCount++;
+    lastTried = value;
+    if (value === botTargetPw) { hit = true; break; }
+  }
+
+  if (exhausted && !hit) {
+    if (botPhase === 'variants') {
+      botPhase = 'brute';
+      botBruteGen = bruteGenerator();
+      setPhaseTrack('brute');
+      if (botPhaseEl()) botPhaseEl().textContent = 'Slumpmässiga bokstäver — kör tills boten ger upp eller du stoppar';
+      requestAnimationFrame(tickBrute);
+      return;
+    }
+    botRunning = false;
+    endBot('gaveup');
+    return;
+  }
+
+  const now = performance.now();
+  if (now - botLastUiUpdate > 50) {
+    const display = lastTried.length > 30 ? lastTried.slice(0, 30) + '…' : lastTried;
+    botCurrent.textContent = display;
+    botAttempts.textContent = botAttemptsCount.toLocaleString('sv-SE').replace(/,/g, ' ');
+    const elapsed = (now - botStartTimeMs) / 1000;
+    botElapsed.textContent = formatElapsed(elapsed);
+    pushFeed(lastTried);
+    botLastUiUpdate = now;
+  }
+
+  if (hit) {
+    botRunning = false;
+    endBot('found');
+    return;
+  }
+  requestAnimationFrame(tickBrute);
+}
+
+function formatElapsed(s) {
+  if (s < 60) return `${s.toFixed(1)}s`;
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60);
+  if (m < 60) return `${m}m ${sec}s`;
+  const h = Math.floor(m / 60);
+  const mm = m % 60;
+  return `${h}h ${mm}m`;
+}
+
+function endBot(reason) {
+  clearInterval(botFaceInterval);
+  clearInterval(botStatusInterval);
+  botFaceInterval = null;
+  botStatusInterval = null;
+
+  const elapsed = (performance.now() - botStartTimeMs) / 1000;
+  botAttempts.textContent = botAttemptsCount.toLocaleString('sv-SE').replace(/,/g, ' ');
+  botElapsed.textContent = formatElapsed(elapsed);
+
+  botKeeperEl.classList.remove('running');
+  botGuesserEl.classList.remove('running');
+  botStop.style.display = 'none';
+  botStart.style.display = 'inline-block';
+  botStart.textContent = 'Kör igen';
+  botInput.disabled = false;
+  if (botPhaseEl()) {
+    const phaseNames = { common: 'fas 1 · vanliga lösenord', variants: 'fas 2 · varianter', brute: 'fas 3 · slumpmässiga bokstäver' };
+    botPhaseEl().textContent = reason === 'found'
+      ? `Hittades i ${phaseNames[botPhase] || 'okänd fas'}`
+      : (reason === 'stopped' ? 'Stoppad av användaren' : 'Alla försök slut');
+  }
+
+  if (reason === 'found') {
+    faceKeeper.textContent = '[ x_x ]';
+    faceGuesser.textContent = '[ ^o^ ]';
+    statusKeeper.textContent = 'jag har förlorat...';
+    statusGuesser.textContent = 'HITTAT!';
+    botKeeperEl.classList.add('found');
+    botGuesserEl.classList.add('found');
+    botCurrent.innerHTML = `<strong style="color:var(--accent-deep)">${escapeHtml(botTargetPw)}</strong>`;
+    pushFeed(botTargetPw + '  ← TRÄFF', true);
+    burstConfetti();
+    botFoundMsg.className = 'bot-found-msg show';
+    botFoundMsg.innerHTML = `
+      <h3>Boten hittade ditt lösenord</h3>
+      <p>Lösenordet <span class="found-pw">${escapeHtml(botTargetPw)}</span> knäcktes på ${formatElapsed(elapsed)} efter ${botAttemptsCount.toLocaleString('sv-SE').replace(/,/g, ' ')} försök. En riktig angripare hade gjort det ännu snabbare. Byt det direkt.</p>
+    `;
+  } else if (reason === 'stopped') {
+    faceKeeper.textContent = '[ ¯▽¯ ]';
+    faceGuesser.textContent = '[ -_- ]';
+    statusKeeper.textContent = 'puh, du räddade mig.';
+    statusGuesser.textContent = 'stoppad av användaren.';
+    botCurrent.textContent = '—';
+    botFoundMsg.className = 'bot-found-msg safe show';
+    botFoundMsg.innerHTML = `
+      <h3>Boten gav aldrig upp</h3>
+      <p>Efter ${botAttemptsCount.toLocaleString('sv-SE').replace(/,/g, ' ')} försök på ${formatElapsed(elapsed)} hade boten fortfarande inte hittat lösenordet. Bra tecken — men minns: en riktig angripare kör miljarder gissningar per sekund, inte tusentals.</p>
+    `;
+  } else {
+    faceKeeper.textContent = '[ ¯v¯ ]';
+    faceGuesser.textContent = '[ ×_× ]';
+    statusKeeper.textContent = 'okej, du vinner.';
+    statusGuesser.textContent = 'gav upp.';
+    botCurrent.textContent = '—';
+    botFoundMsg.className = 'bot-found-msg safe show';
+    botFoundMsg.innerHTML = `<h3>Boten gav upp</h3><p>Efter ${botAttemptsCount.toLocaleString('sv-SE').replace(/,/g, ' ')} försök orkade boten inte mer.</p>`;
+  }
+}
+
+function escapeHtml(s) {
+  return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+botStart.addEventListener('click', startBot);
+botStop.addEventListener('click', () => { botRunning = false; endBot('stopped'); });
+botInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !botRunning) startBot(); });
+</script>
+<script defer src="/_vercel/insights/script.js"></script>
+<script defer src="/_vercel/speed-insights/script.js"></script>
+</body>
+</html>
