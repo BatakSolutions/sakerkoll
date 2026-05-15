@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Om Säkerkoll — Vem ligger bakom?</title>
+<meta name="description" content="Säkerkoll är ett oberoende svenskt projekt från Batak Solutions. Vi kollar läckta lösenord på ett sätt där ditt lösenord aldrig lämnar din webbläsare.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #f4efe6;
+  --bg-alt: #ebe4d4;
+  --ink: #0e2a47;
+  --ink-soft: #3d5570;
+  --ink-mute: #6b7a8f;
+  --ink-faint: #a8b0bc;
+  --line: rgba(14, 42, 71, 0.12);
+  --line-strong: rgba(14, 42, 71, 0.25);
+  --paper: #faf6ed;
+  --accent: #c76a4a;
+  --accent-deep: #a85336;
+  --safe: #4e7a5e;
+  --safe-deep: #36583f;
+  --serif: 'Fraunces', 'Times New Roman', serif;
+  --sans: 'Geist', -apple-system, sans-serif;
+  --mono: 'Geist Mono', 'Courier New', monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  position: relative;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.32;
+  z-index: 100;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.055 0 0 0 0 0.165 0 0 0 0 0.28 0 0 0 0.15 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  mix-blend-mode: multiply;
+}
+
+a { color: var(--ink); text-decoration: none; transition: color 0.2s; }
+a:hover { color: var(--accent-deep); }
+
+.container { max-width: 940px; margin: 0 auto; padding: 0 32px; }
+.container-narrow { max-width: 720px; margin: 0 auto; padding: 0 32px; }
+
+/* --- Nav (mirrors main site) --- */
+nav.top {
+  position: sticky;
+  top: 0;
+  background: rgba(244, 239, 230, 0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+  z-index: 50;
+}
+.nav-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 18px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+.logo { display: inline-flex; align-items: center; gap: 10px; font-family: var(--serif); font-style: italic; font-size: 1.4rem; color: var(--ink); }
+.logo-mark { width: 10px; height: 10px; background: var(--accent); border-radius: 50%; display: inline-block; }
+.nav-links { display: flex; gap: 22px; align-items: center; }
+.nav-links a { font-size: 0.86rem; color: var(--ink-soft); }
+.nav-links a:hover { color: var(--ink); }
+.nav-links a.active { color: var(--ink); font-weight: 500; }
+.nav-toggle { display: none; background: none; border: none; cursor: pointer; padding: 8px; flex-direction: column; gap: 4px; }
+.nav-toggle span { display: block; width: 22px; height: 1.5px; background: var(--ink); transition: 0.2s; }
+.nav-toggle.open span:nth-child(1) { transform: translateY(5.5px) rotate(45deg); }
+.nav-toggle.open span:nth-child(2) { opacity: 0; }
+.nav-toggle.open span:nth-child(3) { transform: translateY(-5.5px) rotate(-45deg); }
+
+@media (max-width: 820px) {
+  .nav-toggle { display: flex; }
+  .nav-links {
+    display: none;
+    position: absolute;
+    top: 100%; left: 0; right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+    padding: 14px 32px 22px;
+    gap: 0;
+  }
+  .nav-links.open { display: flex; }
+  .nav-links a { padding: 12px 0; border-bottom: 1px solid var(--line); font-size: 1rem; }
+  .nav-links a:last-child { border-bottom: none; }
+}
+
+/* --- Hero --- */
+.hero { padding: 88px 0 56px; border-bottom: 1px solid var(--line); }
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.eyebrow::before { content: ''; width: 28px; height: 1px; background: var(--ink-mute); }
+h1 {
+  font-family: var(--serif);
+  font-size: clamp(2.2rem, 5vw, 3.6rem);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -0.015em;
+  margin-bottom: 24px;
+  color: var(--ink);
+}
+h1 em { font-style: italic; color: var(--accent-deep); }
+.hero-lede {
+  font-family: var(--serif);
+  font-size: 1.3rem;
+  font-style: italic;
+  font-weight: 300;
+  color: var(--ink-soft);
+  line-height: 1.5;
+  max-width: 56ch;
+}
+
+/* --- Sections --- */
+section.block { padding: 64px 0; border-bottom: 1px solid var(--line); }
+section.block:last-of-type { border-bottom: none; }
+.block-head {
+  display: flex;
+  gap: 28px;
+  align-items: baseline;
+  margin-bottom: 24px;
+}
+.section-num {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.16em;
+  color: var(--ink-faint);
+  flex: 0 0 auto;
+}
+h2 {
+  font-family: var(--serif);
+  font-size: clamp(1.55rem, 3vw, 2.1rem);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  color: var(--ink);
+}
+h2 em { font-style: italic; color: var(--accent-deep); }
+.block-body { max-width: 62ch; color: var(--ink-soft); font-size: 1.04rem; line-height: 1.65; }
+.block-body p + p { margin-top: 16px; }
+.block-body strong { color: var(--ink); font-weight: 600; }
+
+/* --- Identity card (Batak Solutions block) --- */
+.id-card {
+  background: var(--paper);
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  padding: 32px 36px;
+  margin-top: 28px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px 48px;
+  position: relative;
+}
+.id-card::before {
+  content: 'ID-KORT';
+  position: absolute;
+  top: 16px; right: 22px;
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.18em;
+  color: var(--ink-faint);
+}
+.id-row { display: flex; flex-direction: column; gap: 4px; }
+.id-label {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+.id-value { font-family: var(--sans); font-size: 0.98rem; color: var(--ink); font-weight: 500; }
+.id-value a { color: var(--ink); border-bottom: 1px solid var(--line-strong); }
+.id-value a:hover { color: var(--accent-deep); border-bottom-color: var(--accent); }
+
+@media (max-width: 600px) {
+  .id-card { grid-template-columns: 1fr; padding: 24px 22px; gap: 18px; }
+}
+
+/* --- Tech list --- */
+.tech-list { margin-top: 24px; display: flex; flex-direction: column; gap: 18px; max-width: 62ch; }
+.tech-item {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+  padding: 18px 20px;
+  background: var(--paper);
+  border-left: 2px solid var(--safe);
+  border-radius: 0 4px 4px 0;
+}
+.tech-num {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  color: var(--safe-deep);
+  flex: 0 0 auto;
+  padding-top: 3px;
+}
+.tech-title {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.1rem;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.tech-desc { font-size: 0.92rem; color: var(--ink-soft); line-height: 1.55; }
+
+/* --- Footer --- */
+footer {
+  padding: 56px 0 36px;
+  background: var(--bg-alt);
+  border-top: 1px solid var(--line);
+}
+.footer-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 32px;
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr;
+  gap: 40px;
+}
+.footer-col h4 {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  margin-bottom: 14px;
+}
+.footer-col p, .footer-col a { font-size: 0.9rem; color: var(--ink-soft); line-height: 1.6; }
+.footer-col a { display: block; padding: 3px 0; }
+.footer-col a:hover { color: var(--ink); }
+.footer-meta {
+  grid-column: 1 / -1;
+  margin-top: 36px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  color: var(--ink-faint);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+@media (max-width: 720px) {
+  .footer-inner { grid-template-columns: 1fr; gap: 32px; }
+  section.block { padding: 48px 0; }
+  .hero { padding: 60px 0 40px; }
+  .block-head { flex-direction: column; gap: 8px; }
+}
+</style>
+</head>
+<body>
+
+<nav class="top">
+  <div class="nav-inner">
+    <a href="/" class="logo">
+      <span class="logo-mark"></span>
+      <span>Säkerkoll</span>
+    </a>
+    <button class="nav-toggle" id="nav-toggle" aria-label="Meny" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="nav-links" id="nav-links">
+      <a href="/">Start</a>
+      <a href="/#kolla">Lösenord</a>
+      <a href="/#bot">Botkampen</a>
+      <a href="/generator">Generator</a>
+      <a href="/url-koll">URL-koll</a>
+      <a href="/quiz">Säkerhetsquiz</a>
+      <a href="/om" class="active">Om</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="container">
+    <span class="eyebrow">Om sajten / 2026</span>
+    <h1>Vem ligger <em>bakom</em> Säkerkoll?</h1>
+    <p class="hero-lede">En berättigad fråga. Det här är en sajt där du skriver in ditt lösenord — det är klokt att veta vem som faktiskt står bakom innan du gör det.</p>
+  </div>
+</section>
+
+<section class="block">
+  <div class="container">
+    <div class="block-head">
+      <span class="section-num">01 / Vem</span>
+      <h2>Säkerkoll drivs av <em>Batak Solutions</em></h2>
+    </div>
+    <div class="block-body">
+      <p>Batak Solutions är ett oberoende svenskt utvecklingshus baserat i Ängelholm. Vi bygger webbsajter åt lokala företag och driver egna projekt inom säkerhet och konsumentupplysning.</p>
+      <p>Säkerkoll är inte en betaltjänst, det är inte en startup, och vi säljer ingen "premium-prenumeration". Det är ett gratis projekt vi byggt för att svenskar ska kunna kolla sina lösenord på svenska — utan att riskera att lösenordet hamnar hos någon de inte litar på.</p>
+    </div>
+
+    <div class="id-card">
+      <div class="id-row">
+        <span class="id-label">Operatör</span>
+        <span class="id-value">Batak Solutions</span>
+      </div>
+      <div class="id-row">
+        <span class="id-label">Bas</span>
+        <span class="id-value">Ängelholm, Sverige</span>
+      </div>
+      <div class="id-row">
+        <span class="id-label">Kontakt</span>
+        <span class="id-value"><a href="mailto:ari.dev.web@gmail.com">ari.dev.web@gmail.com</a></span>
+      </div>
+      <div class="id-row">
+        <span class="id-label">Domän</span>
+        <span class="id-value">säkerkoll.se · registrerad maj 2026</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block">
+  <div class="container">
+    <div class="block-head">
+      <span class="section-num">02 / Varför</span>
+      <h2>Det fanns inget <em>svenskt</em> alternativ</h2>
+    </div>
+    <div class="block-body">
+      <p>Världens bästa lösenordskontroll är amerikanska <strong>HaveIBeenPwned</strong>, byggd 2013 av säkerhetsforskaren Troy Hunt. Den används internt av 1Password, Mozilla, Google Chrome och tusentals andra säkerhetstjänster.</p>
+      <p>Men HIBP är på engelska — och för en stor del av svenskarna är det en barriär. Vi byggde Säkerkoll för att paketera samma teknik på svenska, med svenska förklaringar, för svenska användare. Vi använder HIBP:s öppna API — vi har inte byggt en egen läckdatabas, för det vore tekniskt sämre.</p>
+    </div>
+  </div>
+</section>
+
+<section class="block">
+  <div class="container">
+    <div class="block-head">
+      <span class="section-num">03 / Hur</span>
+      <h2>Tekniken som <em>aldrig</em> ser ditt lösenord</h2>
+    </div>
+    <div class="block-body">
+      <p>När du skriver in ett lösenord händer det här i din webbläsare — inte på vår server:</p>
+    </div>
+
+    <div class="tech-list">
+      <div class="tech-item">
+        <span class="tech-num">01</span>
+        <div>
+          <div class="tech-title">Ditt lösenord blir en sifferkod</div>
+          <div class="tech-desc">Lösenordet hashas lokalt med SHA-1 via webbläsarens inbyggda SubtleCrypto. Resultatet är 40 tecken som är omöjliga att översätta tillbaka till lösenordet.</div>
+        </div>
+      </div>
+      <div class="tech-item">
+        <span class="tech-num">02</span>
+        <div>
+          <div class="tech-title">Bara fem tecken skickas iväg</div>
+          <div class="tech-desc">Bara de fem första tecknen av sifferkoden går till HaveIBeenPwned. Tekniken kallas k-anonymitet — den används av 1Password och Bitwarden internt.</div>
+        </div>
+      </div>
+      <div class="tech-item">
+        <span class="tech-num">03</span>
+        <div>
+          <div class="tech-title">Din webbläsare avgör själv</div>
+          <div class="tech-desc">HIBP returnerar hundratals matchningar som börjar på samma fem tecken. Din webbläsare jämför resten lokalt och avgör om just ditt lösenord finns med.</div>
+        </div>
+      </div>
+      <div class="tech-item">
+        <span class="tech-num">04</span>
+        <div>
+          <div class="tech-title">Ingen server, ingen logg</div>
+          <div class="tech-desc">Vi har ingen backend som tar emot lösenord. Vi loggar inte vad du söker. Vi har ingen databas där dina sökningar lagras — för det finns ingen databas.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block">
+  <div class="container">
+    <div class="block-head">
+      <span class="section-num">04 / Granska</span>
+      <h2>Lita inte på oss — <em>verifiera</em></h2>
+    </div>
+    <div class="block-body">
+      <p>"Lita på oss" är inte tillräckligt när det handlar om lösenord. Tre konkreta sätt du kan kolla själv att vi inte luras:</p>
+      <p><strong>1. Tryck F12 i webbläsaren.</strong> Gå till Network-fliken. Skriv in ett lösenord på startsidan och klicka Kontrollera. Du kommer bara se en enda förfrågan till <code style="font-family:var(--mono);font-size:0.88rem;background:var(--bg-alt);padding:2px 5px;border-radius:2px;">api.pwnedpasswords.com/range/</code> med fem tecken — aldrig hela lösenordet.</p>
+      <p><strong>2. Stäng av internet och testa.</strong> Säkerhetsstyrkan-testet och bot-arenan funkar utan internetuppkoppling — för de skickar ingenting någonsin.</p>
+      <p><strong>3. Källkoden är öppen.</strong> Snart publicerar vi all kod på GitHub under AGPL-3.0-licens, så vem som helst kan granska att vi inte gör något skumt i bakgrunden.</p>
+    </div>
+  </div>
+</section>
+
+<section class="block">
+  <div class="container">
+    <div class="block-head">
+      <span class="section-num">05 / Kontakt</span>
+      <h2>Frågor, buggar eller <em>kritik?</em></h2>
+    </div>
+    <div class="block-body">
+      <p>Skriv direkt till <a href="mailto:ari.dev.web@gmail.com" style="border-bottom:1px solid var(--line-strong);">ari.dev.web@gmail.com</a>. Vi svarar normalt inom ett par dagar.</p>
+      <p>Hittar du en säkerhetsbugg? Mejla med ämnesraden "Security" så har det förtur. Vi har ingen formell bug bounty men uppskattar alla rapporter.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-col">
+      <h4>Säkerkoll</h4>
+      <p>Byggd för att vara enkel att använda och omöjlig att missbruka. Ingen spårning, inga cookies, ingen reklam.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Sajten</h4>
+      <a href="/">Startsida</a>
+      <a href="/om">Om Säkerkoll</a>
+      <a href="/integritet">Integritetspolicy</a>
+    </div>
+    <div class="footer-col">
+      <h4>Kontakt</h4>
+      <a href="mailto:ari.dev.web@gmail.com">ari.dev.web@gmail.com</a>
+      <a href="https://haveibeenpwned.com/API/v3" target="_blank" rel="noopener">Data: HIBP ↗</a>
+    </div>
+    <div class="footer-meta">
+      <span>SÄKERKOLL · 2026 · BATAK SOLUTIONS</span>
+      <span>Ängelholm, Sverige</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function() {
+  const toggle = document.getElementById('nav-toggle');
+  const links = document.getElementById('nav-links');
+  if (!toggle || !links) return;
+  toggle.addEventListener('click', () => {
+    const open = toggle.classList.toggle('open');
+    links.classList.toggle('open', open);
+    toggle.setAttribute('aria-expanded', open);
+  });
+})();
+</script>
+</body>
+</html>
